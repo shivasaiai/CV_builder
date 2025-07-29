@@ -1,0 +1,18 @@
+import { useState, useCallback, useEffect } from "react";
+import { useParams, useLocation } from "react-router-dom";
+// ... imports ...
+const BuilderPage = () => {
+    const { sessionId } = useParams();
+    const location = useLocation();
+
+    // Set active template from URL query, default to 'Clean Chromatic'
+    const query = new URLSearchParams(location.search);
+    const initialTemplate = query.get('template') || "Clean Chromatic";
+    const [activeTemplate, setActiveTemplate] = useState(initialTemplate);
+
+    // ... existing state and handlers ...
+    // ...
+    return (
+        // ... JSX
+    );
+}; 
