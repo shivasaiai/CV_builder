@@ -8,6 +8,9 @@ export interface ContactInfo {
   zip: string;
   phone: string;
   email: string;
+  summary?: string;
+  linkedin?: string;
+  website?: string;
 }
 
 export interface WorkExperience {

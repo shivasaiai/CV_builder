@@ -81,10 +81,12 @@ const TemplatesPage = () => {
         }));
     };
 
-    const handleUseTemplate = (templateName: string) => {
+    const handleUseTemplate = (templateName: string, templateId: number) => {
         const sessionId = generateSessionId();
         const encodedTemplateName = encodeURIComponent(templateName);
-        window.location.href = `/builder/${sessionId}?template=${encodedTemplateName}`;
+        const selectedColor = selectedColors[templateId] || availableColors[0].color;
+        const encodedColor = encodeURIComponent(selectedColor);
+        window.location.href = `/builder-new/${sessionId}?template=${encodedTemplateName}&color=${encodedColor}`;
     };
 
     return (
@@ -129,7 +131,7 @@ const TemplatesPage = () => {
                             </div>
                             <div
                                 className="relative h-[400px] w-full max-w-[280px] overflow-hidden rounded-lg shadow-lg border cursor-pointer hover:shadow-xl transition-all duration-300 group-hover:scale-105 hover:border-primary"
-                                onClick={() => handleUseTemplate(template.name)}
+                                onClick={() => handleUseTemplate(template.name, template.id)}
                             >
                                 <div className="absolute top-0 left-1/2 -translate-x-1/2 transform scale-[0.32] origin-top w-[8.5in] h-[11in]">
                                     <template.Component 

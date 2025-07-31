@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect, useState, useCallback } from 'react';
 import { ResumeData, TemplateColors } from './types';
 import { useTemplateManager } from './hooks/useTemplateManager';
 import { COLOR_THEMES } from './constants';
@@ -32,27 +32,27 @@ const ResumePreview = ({
   );
 
   // Calculate scale for preview
+  const calculateScale = useCallback(() => {
+    if (previewContainerRef.current && previewContentRef.current) {
+      const container = previewContainerRef.current;
+      const content = previewContentRef.current;
+
+      const containerWidth = container.offsetWidth;
+      const containerHeight = container.offsetHeight;
+      const contentWidth = content.scrollWidth;
+      const contentHeight = content.scrollHeight;
+
+      if (contentHeight === 0 || contentWidth === 0) return;
+
+      const scaleX = (containerWidth - 32) / contentWidth;
+      const scaleY = (containerHeight - 32) / contentHeight;
+      const newScale = Math.min(scaleX, scaleY, 1); // Don't scale up beyond 100%
+
+      setScale(newScale);
+    }
+  }, []);
+
   useEffect(() => {
-    const calculateScale = () => {
-      if (previewContainerRef.current && previewContentRef.current) {
-        const container = previewContainerRef.current;
-        const content = previewContentRef.current;
-
-        const containerWidth = container.offsetWidth;
-        const containerHeight = container.offsetHeight;
-        const contentWidth = content.scrollWidth;
-        const contentHeight = content.scrollHeight;
-
-        if (contentHeight === 0 || contentWidth === 0) return;
-
-        const scaleX = (containerWidth - 32) / contentWidth;
-        const scaleY = (containerHeight - 32) / contentHeight;
-        const newScale = Math.min(scaleX, scaleY, 1); // Don't scale up beyond 100%
-
-        setScale(newScale);
-      }
-    };
-
     const timer = setTimeout(calculateScale, 100);
     window.addEventListener("resize", calculateScale);
 
@@ -60,7 +60,7 @@ const ResumePreview = ({
       clearTimeout(timer);
       window.removeEventListener("resize", calculateScale);
     };
-  }, [resumeData, activeTemplate]);
+  }, [calculateScale, activeTemplate]);
 
   // Render the currently active template
   const renderTemplate = () => {
@@ -72,7 +72,7 @@ const ResumePreview = ({
           contact={resumeData.contact}
           summary={resumeData.summary}
           skills={resumeData.skills}
-          experience={resumeData.workExperiences}
+          experience={resumeData.workExperiences[0] || {}}
           education={resumeData.education}
           colors={templateColors}
           primaryColor={templateColors.primary}
@@ -148,7 +148,9 @@ const ResumePreview = ({
               backgroundColor: 'white'
             }}
           >
-            {renderTemplate()}
+            <div key={activeTemplate}>
+              {renderTemplate()}
+            </div>
           </div>
         </div>
 
@@ -172,7 +174,9 @@ const ResumePreview = ({
       {/* Hidden PDF Generation Content */}
       <div style={{ position: 'fixed', left: '100vw', top: 0, zIndex: -1 }}>
         <div id="pdf-generator-content" className="bg-white" style={{ width: '8.5in', height: 'auto' }}>
-          {renderTemplate()}
+          <div key={`pdf-${activeTemplate}`}>
+            {renderTemplate()}
+          </div>
         </div>
       </div>
     </div>

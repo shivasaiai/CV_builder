@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useParams } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useParams, useSearchParams } from "react-router-dom";
 import { 
   BuilderSidebar, 
   SectionRenderer, 
@@ -14,6 +14,7 @@ import { ResumeData } from "@/components/builder/types";
 
 const BuilderNew = () => {
   const { sessionId } = useParams();
+  const [searchParams] = useSearchParams();
   const [showUploadModal, setShowUploadModal] = useState(false);
   
   // Custom hooks for state management
@@ -40,6 +41,22 @@ const BuilderNew = () => {
     setActiveTemplate
   );
 
+  const currentSection = SECTIONS[builderState.activeIndex];
+
+  // Handle color from URL parameters on mount
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const colorParam = urlParams.get('color');
+    if (colorParam) {
+      const decodedColor = decodeURIComponent(colorParam);
+      // Set the primary color and update template colors
+      setTemplateColors({
+        ...builderState.templateColors,
+        primary: decodedColor
+      });
+    }
+  }, []); // Run only on mount
+
   // Navigation handlers
   const handleSectionClick = (index: number) => {
     setActiveSection(index);
@@ -62,17 +79,24 @@ const BuilderNew = () => {
   };
 
   const handleResumeUploaded = (importedData: Partial<ResumeData>) => {
+    console.log('=== BuilderNew.handleResumeUploaded ===');
+    console.log('Received importedData:', importedData);
+    console.log('Work experiences in imported data:', importedData.workExperiences?.length || 0);
+    if (importedData.workExperiences && importedData.workExperiences.length > 0) {
+      console.log('First work experience:', importedData.workExperiences[0]);
+    }
+    
     importResumeData(importedData);
     setShowUploadModal(false);
     // Navigate to first section to review imported data
     setActiveSection(0);
+    
+    console.log('Called importResumeData and navigated to section 0');
   };
 
   const handleCloseUpload = () => {
     setShowUploadModal(false);
   };
-
-  const currentSection = SECTIONS[builderState.activeIndex];
 
   return (
     <div className="flex min-h-screen bg-[#F4F7F9]">
@@ -84,7 +108,7 @@ const BuilderNew = () => {
         availableTemplates={templateNames}
         onSectionClick={handleSectionClick}
         onTemplateChange={handleTemplateChange}
-        // onUploadClick={handleUploadClick} // Remove this line
+        onUploadClick={handleUploadClick}
       />
 
       {/* Main Content */}
@@ -96,40 +120,51 @@ const BuilderNew = () => {
             </button>
           </div>
 
-          {/* Show Upload Resume button after template selection */}
-          {builderState.activeTemplate && (
-            <div className="mb-8">
-              <button
-                onClick={handleUploadClick}
-                className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
-              >
-                Upload Resume
-              </button>
+          {currentSection ? (
+            <SectionRenderer
+              activeSection={currentSection}
+              resumeData={resumeData}
+              builderState={builderState}
+              updateResumeData={updateResumeData}
+              updateBuilderState={updateBuilderState}
+              onNext={handleNext}
+              onBack={handleBack}
+              onUploadClick={handleUploadClick}
+            />
+          ) : (
+            <div className="max-w-2xl w-full flex flex-col items-center justify-center h-[80vh]">
+              <h1 className="text-4xl font-bold mb-2 text-red-600">Loading Error</h1>
+              <p className="text-xl text-gray-500 mb-8">
+                Section not found. Please check console for details.
+              </p>
+              <div className="text-sm text-gray-400">
+                <p>Active Index: {builderState.activeIndex}</p>
+                <p>Sections Length: {SECTIONS.length}</p>
+                <p>Current Section: {currentSection || 'undefined'}</p>
+              </div>
             </div>
           )}
-
-          <SectionRenderer
-            activeSection={currentSection}
-            resumeData={resumeData}
-            builderState={builderState}
-            updateResumeData={updateResumeData}
-            updateBuilderState={updateBuilderState}
-            onNext={handleNext}
-            onBack={handleBack}
-            onUploadClick={handleUploadClick}
-          />
         </div>
 
         {/* Live Preview */}
-        <ResumePreview
-          resumeData={resumeData}
-          activeTemplate={builderState.activeTemplate}
-          templateColors={builderState.templateColors}
-          showColorEditor={builderState.showColorEditor}
-          onTemplateChange={handleTemplateChange}
-          onColorChange={setTemplateColors}
-          onToggleColorEditor={toggleColorEditor}
-        />
+        {builderState.activeTemplate ? (
+          <ResumePreview
+            resumeData={resumeData}
+            activeTemplate={builderState.activeTemplate}
+            templateColors={builderState.templateColors}
+            showColorEditor={builderState.showColorEditor}
+            onTemplateChange={handleTemplateChange}
+            onColorChange={setTemplateColors}
+            onToggleColorEditor={toggleColorEditor}
+          />
+        ) : (
+          <div className="w-1/3 flex items-center justify-center">
+            <div className="text-center">
+              <h3 className="text-lg font-semibold mb-2">Loading Template...</h3>
+              <p className="text-gray-500">Please wait while we load your template.</p>
+            </div>
+          </div>
+        )}
       </main>
 
       {/* Resume Upload Modal */}

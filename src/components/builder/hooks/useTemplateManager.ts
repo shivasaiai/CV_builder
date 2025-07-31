@@ -49,11 +49,12 @@ export const useTemplateManager = (
     const templateParam = urlParams.get('template');
     if (templateParam) {
       const decodedTemplate = decodeURIComponent(templateParam);
-      if (AVAILABLE_TEMPLATES[decodedTemplate as keyof typeof AVAILABLE_TEMPLATES]) {
+      if (AVAILABLE_TEMPLATES[decodedTemplate as keyof typeof AVAILABLE_TEMPLATES] && 
+          decodedTemplate !== activeTemplate) {
         setActiveTemplate(decodedTemplate);
       }
     }
-  }, [setActiveTemplate]);
+  }, []); // Remove setActiveTemplate from dependencies to prevent infinite loop
 
   const getTemplateComponent = (templateName: string) => {
     return AVAILABLE_TEMPLATES[templateName as keyof typeof AVAILABLE_TEMPLATES] || CleanChromatic;

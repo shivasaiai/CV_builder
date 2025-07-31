@@ -40,6 +40,94 @@ const ResumeUpload = ({ onResumeUploaded, onClose, isOpen }: ResumeUploadProps) 
     setState(prev => ({ ...prev, ...updates }));
   }, []);
 
+  // Define handleFileUpload FIRST, before other callbacks that depend on it
+  const handleFileUpload = useCallback(async (file: File) => {
+    updateState({ 
+      isUploading: true, 
+      error: null, 
+      uploadedFile: file,
+      success: false,
+      ocrProgress: 0,
+      ocrTotal: 0,
+      ocrActive: false,
+    });
+
+    try {
+      // Enhanced file validation
+      if (!file) {
+        throw new Error('No file selected');
+      }
+      
+      if (file.size === 0) {
+        throw new Error('File is empty');
+      }
+      
+      if (file.size > 50 * 1024 * 1024) {
+        throw new Error(`File is too large (${(file.size / 1024 / 1024).toFixed(1)}MB). Maximum size is 50MB.`);
+      }
+
+      // Check file type
+      const allowedTypes = ['.pdf', '.docx', '.doc', '.txt', '.rtf', '.jpg', '.jpeg', '.png', '.gif', '.bmp', '.tiff'];
+      const fileExtension = '.' + file.name.split('.').pop()?.toLowerCase();
+      
+      if (!allowedTypes.includes(fileExtension)) {
+        throw new Error(`File type ${fileExtension} is not supported. Please upload a PDF, DOCX, DOC, TXT, RTF, or image file.`);
+      }
+
+      console.log('Starting file parsing:', {
+        name: file.name,
+        size: `${(file.size / 1024).toFixed(1)} KB`,
+        type: file.type
+      });
+
+      const parsedData = await EnhancedResumeParser.parseFile(file, (progress, total, status) => {
+        console.log('Parsing progress:', { progress, total, status });
+        updateState({ 
+          ocrProgress: progress, 
+          ocrTotal: total, 
+          ocrActive: status.toLowerCase().includes('ocr') 
+        });
+      });
+
+      console.log('Parsing completed successfully:', parsedData);
+
+      updateState({ 
+        isUploading: false, 
+        parsedData,
+        success: true,
+        ocrActive: false,
+      });
+    } catch (error) {
+      console.error('File upload error:', error);
+      
+      let errorMessage = 'Failed to parse resume';
+      
+      if (error instanceof Error) {
+        errorMessage = error.message;
+        
+        // Provide more user-friendly error messages
+        if (error.message.includes('PDF')) {
+          errorMessage = 'Could not process PDF file. Please ensure it\'s not password-protected and contains readable text.';
+        } else if (error.message.includes('DOCX') || error.message.includes('mammoth')) {
+          errorMessage = 'Could not process Word document. Please try saving it in a newer format or convert to PDF.';
+        } else if (error.message.includes('OCR') || error.message.includes('tesseract')) {
+          errorMessage = 'Could not extract text from image-based content. Please ensure the image quality is good and text is clearly visible.';
+        } else if (error.message.includes('timeout')) {
+          errorMessage = 'Processing took too long. Please try with a smaller file or simpler format.';
+        } else if (error.message.includes('network') || error.message.includes('fetch')) {
+          errorMessage = 'Network error occurred. Please check your connection and try again.';
+        }
+      }
+
+      updateState({ 
+        isUploading: false, 
+        error: errorMessage,
+        success: false,
+        ocrActive: false,
+      });
+    }
+  }, [updateState]);
+
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     updateState({ isDragging: true });
@@ -67,42 +155,19 @@ const ResumeUpload = ({ onResumeUploaded, onClose, isOpen }: ResumeUploadProps) 
     }
   }, [handleFileUpload]);
 
-  const handleFileUpload = useCallback(async (file: File) => {
-    updateState({ 
-      isUploading: true, 
-      error: null, 
-      uploadedFile: file,
-      success: false,
-      ocrProgress: 0,
-      ocrTotal: 0,
-      ocrActive: false,
-    });
-
-    try {
-      const parsedData = await EnhancedResumeParser.parseFile(file, (page, total) => {
-        updateState({ ocrProgress: page, ocrTotal: total, ocrActive: true });
-      });
-      updateState({ 
-        isUploading: false, 
-        parsedData,
-        success: true,
-        ocrActive: false,
-      });
-    } catch (error) {
-      updateState({ 
-        isUploading: false, 
-        error: error instanceof Error ? error.message : 'Failed to parse resume',
-        success: false,
-        ocrActive: false,
-      });
-    }
-  }, [updateState]);
-
   const handleImportResume = () => {
+    console.log('=== ResumeUpload.handleImportResume ===');
+    console.log('state.parsedData:', state.parsedData);
+    
     if (state.parsedData) {
       const resumeData = EnhancedResumeParser.convertToResumeData(state.parsedData);
+      console.log('Converted resumeData:', resumeData);
+      console.log('Calling onResumeUploaded with:', resumeData);
+      
       onResumeUploaded(resumeData);
       onClose();
+    } else {
+      console.log('No parsed data available');
     }
   };
 
@@ -114,6 +179,9 @@ const ResumeUpload = ({ onResumeUploaded, onClose, isOpen }: ResumeUploadProps) 
       parsedData: null,
       error: null,
       success: false,
+      ocrProgress: 0,
+      ocrTotal: 0,
+      ocrActive: false,
     });
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
@@ -172,7 +240,7 @@ const ResumeUpload = ({ onResumeUploaded, onClose, isOpen }: ResumeUploadProps) 
             <input
               ref={fileInputRef}
               type="file"
-              accept=".pdf,.docx,.txt"
+              accept=".pdf,.docx,.doc,.txt,.rtf,.jpg,.jpeg,.png,.gif,.bmp,.tiff"
               onChange={handleFileSelect}
               className="hidden"
             />
@@ -283,17 +351,29 @@ const ResumeUpload = ({ onResumeUploaded, onClose, isOpen }: ResumeUploadProps) 
                   {/* Work Experience */}
                   {state.parsedData.workExperiences.length > 0 && (
                     <div className="p-3 bg-gray-50 rounded-lg">
-                      <h5 className="font-medium text-gray-900 mb-2">Work Experience</h5>
+                      <h5 className="font-medium text-gray-900 mb-2">Work Experience ({state.parsedData.workExperiences.length})</h5>
                       <div className="text-sm text-gray-600 space-y-1">
                         {state.parsedData.workExperiences.slice(0, 3).map((exp, index) => (
                           <p key={index}>
-                            {exp.jobTitle} {exp.employer && `at ${exp.employer}`}
+                            <strong>Job:</strong> {exp.jobTitle || 'No title'} {exp.employer && `at ${exp.employer}`}
+                            <br />
+                            <strong>Location:</strong> {exp.location || 'No location'}
+                            <br />
+                            <strong>Dates:</strong> {exp.startDate || 'No start'} - {exp.endDate || (exp.current ? 'Present' : 'No end')}
                           </p>
                         ))}
                         {state.parsedData.workExperiences.length > 3 && (
                           <p className="text-gray-500">+{state.parsedData.workExperiences.length - 3} more...</p>
                         )}
                       </div>
+                    </div>
+                  )}
+                  
+                  {/* Debug: Show if no work experience */}
+                  {state.parsedData.workExperiences.length === 0 && (
+                    <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                      <h5 className="font-medium text-yellow-800 mb-2">⚠️ Work Experience</h5>
+                      <p className="text-sm text-yellow-700">No work experience found in resume</p>
                     </div>
                   )}
 
@@ -353,7 +433,8 @@ const ResumeUpload = ({ onResumeUploaded, onClose, isOpen }: ResumeUploadProps) 
         <div className="mt-6 p-4 bg-blue-50 rounded-lg">
           <h4 className="text-blue-900 font-medium mb-2">How it works:</h4>
           <ul className="text-blue-800 text-sm space-y-1">
-            <li>• Upload your existing resume in PDF, DOCX, or TXT format</li>
+            <li>• Upload your existing resume in PDF, DOCX, DOC, TXT, RTF, or image format</li>
+            <li>• Supports both text-based and image-based PDFs with OCR</li>
             <li>• We'll automatically extract and organize your information</li>
             <li>• Review and edit the imported data in our builder</li>
             <li>• Apply it to any of our professional templates</li>

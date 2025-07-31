@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resume Parser Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-section {
+            border: 1px solid #ddd;
+            margin: 20px 0;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        .error {
+            color: red;
+            background: #ffe6e6;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .success {
+            color: green;
+            background: #e6ffe6;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .warning {
+            color: orange;
+            background: #fff3e6;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .results {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 10px 0;
+            white-space: pre-wrap;
+            font-family: monospace;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        input[type="file"] {
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 100%;
+        }
+        .progress {
+            width: 100%;
+            height: 20px;
+            background: #f0f0f0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        .progress-bar {
+            height: 100%;
+            background: #007bff;
+            transition: width 0.3s ease;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .stat-card {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #007bff;
+        }
+        .stat-label {
+            color: #666;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Resume Parser Production Test Suite</h1>
+    
+    <div class="test-section">
+        <h2>📁 File Upload Test</h2>
+        <input type="file" id="fileInput" accept=".pdf,.docx,.doc,.txt,.rtf,.jpg,.jpeg,.png,.gif,.bmp,.tiff" />
+        <button onclick="testSingleFile()">Test Single File</button>
+        <button onclick="testAllFiles()">Test All Sample Files</button>
+        <button onclick="clearResults()">Clear Results</button>
+        
+        <div class="progress" id="progressContainer" style="display: none;">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+        <div id="progressText"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>📊 Test Results</h2>
+        <div class="stats" id="statsContainer"></div>
+        <div id="testResults"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>🔍 Detailed Analysis</h2>
+        <div id="detailedResults"></div>
+    </div>
+
+    <script type="module">
+        // Import the parser (this would need to be adapted based on your build setup)
+        // For now, we'll create a mock structure to test the concepts
+        
+        let testResults = [];
+        let currentTest = null;
+
+        // Mock parser for testing - replace with actual import
+        class TestResumeParser {
+            static async parseFile(file, onProgress) {
+                // This would be replaced with actual parser import
+                console.log('Testing file:', file.name);
+                
+                if (onProgress) {
+                    for (let i = 0; i <= 100; i += 10) {
+                        await new Promise(resolve => setTimeout(resolve, 100));
+                        onProgress(i, 100, `Processing... ${i}%`);
+                    }
+                }
+                
+                // Mock result for testing
+                return {
+                    contact: {
+                        firstName: 'Test',
+                        lastName: 'User',
+                        email: 'test@example.com',
+                        phone: '123-456-7890'
+                    },
+                    workExperiences: [{
+                        jobTitle: 'Software Developer',
+                        employer: 'Tech Company',
+                        startDate: new Date('2020-01-01'),
+                        endDate: new Date('2023-01-01')
+                    }],
+                    education: {
+                        school: 'University',
+                        degree: 'Bachelor of Science'
+                    },
+                    skills: ['JavaScript', 'React', 'Node.js'],
+                    summary: 'Experienced developer...'
+                };
+            }
+        }
+
+        window.testSingleFile = async function() {
+            const fileInput = document.getElementById('fileInput');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                alert('Please select a file first');
+                return;
+            }
+            
+            await runTest(file);
+        };
+
+        window.testAllFiles = async function() {
+            // This would test predefined files
+            const testFiles = [
+                'design/resume/cvgen.pdf.pdf',
+                'design/resume/balacv.pdf',
+                'design/resume/shivacv.pdf'
+            ];
+            
+            for (const fileName of testFiles) {
+                try {
+                    // In a real implementation, you'd fetch these files
+                    console.log(`Would test: ${fileName}`);
+                    addResult('info', `Testing ${fileName}...`);
+                } catch (error) {
+                    addResult('error', `Failed to load ${fileName}: ${error.message}`);
+                }
+            }
+        };
+
+        window.clearResults = function() {
+            document.getElementById('testResults').innerHTML = '';
+            document.getElementById('detailedResults').innerHTML = '';
+            document.getElementById('statsContainer').innerHTML = '';
+            testResults = [];
+        };
+
+        async function runTest(file) {
+            const startTime = performance.now();
+            currentTest = {
+                fileName: file.name,
+                fileSize: file.size,
+                fileType: file.type,
+                startTime: startTime,
+                errors: [],
+                warnings: [],
+                extractedData: null
+            };
+
+            try {
+                showProgress(true);
+                addResult('info', `🚀 Starting test for: ${file.name}`);
+                addResult('info', `📊 File size: ${(file.size / 1024).toFixed(1)} KB`);
+                addResult('info', `📄 File type: ${file.type || 'Unknown'}`);
+
+                // Test the parser
+                const result = await TestResumeParser.parseFile(file, updateProgress);
+                
+                currentTest.extractedData = result;
+                currentTest.endTime = performance.now();
+                currentTest.processingTime = currentTest.endTime - currentTest.startTime;
+
+                // Validate results
+                validateResults(result);
+                
+                // Add to test results
+                testResults.push(currentTest);
+                
+                // Display results
+                displayResults(result);
+                updateStats();
+                
+                addResult('success', `✅ Test completed in ${currentTest.processingTime.toFixed(0)}ms`);
+                
+            } catch (error) {
+                currentTest.errors.push(error.message);
+                addResult('error', `❌ Test failed: ${error.message}`);
+                console.error('Test error:', error);
+            } finally {
+                showProgress(false);
+            }
+        }
+
+        function updateProgress(progress, total, status) {
+            const progressBar = document.getElementById('progressBar');
+            const progressText = document.getElementById('progressText');
+            
+            const percentage = (progress / total) * 100;
+            progressBar.style.width = percentage + '%';
+            progressText.textContent = `${status} (${percentage.toFixed(0)}%)`;
+        }
+
+        function showProgress(show) {
+            const container = document.getElementById('progressContainer');
+            container.style.display = show ? 'block' : 'none';
+            if (!show) {
+                document.getElementById('progressText').textContent = '';
+            }
+        }
+
+        function validateResults(result) {
+            const validations = [
+                {
+                    test: () => result.contact.firstName && result.contact.lastName,
+                    message: 'Name extraction',
+                    critical: true
+                },
+                {
+                    test: () => result.contact.email,
+                    message: 'Email extraction',
+                    critical: true
+                },
+                {
+                    test: () => result.contact.phone,
+                    message: 'Phone extraction',
+                    critical: false
+                },
+                {
+                    test: () => result.workExperiences.length > 0,
+                    message: 'Work experience extraction',
+                    critical: true
+                },
+                {
+                    test: () => result.education.school || result.education.degree,
+                    message: 'Education extraction',
+                    critical: false
+                },
+                {
+                    test: () => result.skills.length > 0,
+                    message: 'Skills extraction',
+                    critical: false
+                },
+                {
+                    test: () => result.summary && result.summary.length > 50,
+                    message: 'Summary extraction',
+                    critical: false
+                }
+            ];
+
+            validations.forEach(validation => {
+                if (validation.test()) {
+                    addResult('success', `✅ ${validation.message}: PASSED`);
+                } else {
+                    const level = validation.critical ? 'error' : 'warning';
+                    addResult(level, `${validation.critical ? '❌' : '⚠️'} ${validation.message}: FAILED`);
+                    
+                    if (validation.critical) {
+                        currentTest.errors.push(`Critical validation failed: ${validation.message}`);
+                    } else {
+                        currentTest.warnings.push(`Validation warning: ${validation.message}`);
+                    }
+                }
+            });
+        }
+
+        function displayResults(result) {
+            const detailedDiv = document.getElementById('detailedResults');
+            
+            const resultHtml = `
+                <h3>📋 Extracted Data for ${currentTest.fileName}</h3>
+                <div class="results">
+<strong>👤 CONTACT INFORMATION:</strong>
+Name: ${result.contact.firstName} ${result.contact.lastName}
+Email: ${result.contact.email || 'Not found'}
+Phone: ${result.contact.phone || 'Not found'}
+Location: ${result.contact.city || ''} ${result.contact.state || ''}
+
+<strong>💼 WORK EXPERIENCE (${result.workExperiences.length} entries):</strong>
+${result.workExperiences.map((exp, i) => `
+${i + 1}. ${exp.jobTitle || 'No title'} at ${exp.employer || 'No company'}
+   Location: ${exp.location || 'Not specified'}
+   Dates: ${exp.startDate ? exp.startDate.toLocaleDateString() : 'No start'} - ${exp.endDate ? exp.endDate.toLocaleDateString() : (exp.current ? 'Present' : 'No end')}
+   Accomplishments: ${exp.accomplishments ? exp.accomplishments.substring(0, 100) + '...' : 'None'}
+`).join('')}
+
+<strong>🎓 EDUCATION:</strong>
+School: ${result.education.school || 'Not found'}
+Degree: ${result.education.degree || 'Not found'}
+Field: ${result.education.field || 'Not specified'}
+Graduation: ${result.education.gradMonth || ''} ${result.education.gradYear || 'Not found'}
+
+<strong>🛠️ SKILLS (${result.skills.length} total):</strong>
+${result.skills.join(', ') || 'None found'}
+
+<strong>📝 SUMMARY:</strong>
+${result.summary || 'Not found'}
+                </div>
+            `;
+            
+            detailedDiv.innerHTML += resultHtml;
+        }
+
+        function updateStats() {
+            const statsContainer = document.getElementById('statsContainer');
+            
+            const totalTests = testResults.length;
+            const successfulTests = testResults.filter(t => t.errors.length === 0).length;
+            const avgProcessingTime = testResults.reduce((sum, t) => sum + (t.processingTime || 0), 0) / totalTests;
+            const totalWarnings = testResults.reduce((sum, t) => sum + t.warnings.length, 0);
+            const totalErrors = testResults.reduce((sum, t) => sum + t.errors.length, 0);
+
+            statsContainer.innerHTML = `
+                <div class="stat-card">
+                    <div class="stat-value">${totalTests}</div>
+                    <div class="stat-label">Total Tests</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${successfulTests}</div>
+                    <div class="stat-label">Successful</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${avgProcessingTime.toFixed(0)}ms</div>
+                    <div class="stat-label">Avg Processing Time</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${totalWarnings}</div>
+                    <div class="stat-label">Warnings</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${totalErrors}</div>
+                    <div class="stat-label">Errors</div>
+                </div>
+            `;
+        }
+
+        function addResult(type, message) {
+            const resultsDiv = document.getElementById('testResults');
+            const className = type === 'error' ? 'error' : type === 'warning' ? 'warning' : type === 'success' ? 'success' : '';
+            resultsDiv.innerHTML += `<div class="${className}">${message}</div>`;
+            resultsDiv.scrollTop = resultsDiv.scrollHeight;
+        }
+
+        // Initialize
+        addResult('info', '🔧 Resume Parser Test Suite Ready');
+        addResult('info', '📝 Select a file or click "Test All Sample Files" to begin');
+    </script>
+</body>
+</html>

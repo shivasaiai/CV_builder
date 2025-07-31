@@ -32,8 +32,8 @@ const SectionRenderer = ({
 
   return (
     <div>
-      {/* Upload Resume button in section sidebar */}
-      {onUploadClick && (
+      {/* Upload Resume button only for non-Heading sections (Heading has its own) */}
+      {onUploadClick && activeSection !== 'Heading' && (
         <div className="mb-6 flex justify-end">
           <button
             onClick={onUploadClick}
@@ -59,26 +59,7 @@ const SectionRenderer = ({
           case 'Finalize':
             return <FinalizeSection {...sectionProps} />;
           default:
-            return (
-              <div className="max-w-2xl w-full flex flex-col items-center justify-center h-[80vh]">
-                <h1 className="text-4xl font-bold mb-2 text-gray-900">Section Not Found</h1>
-                <p className="text-xl text-gray-500 mb-8">This section is not implemented yet.</p>
-                <div className="flex gap-4 mt-8 w-full justify-between">
-                  <button 
-                    className="px-6 py-2 rounded bg-gray-200 text-gray-700" 
-                    onClick={onBack}
-                  >
-                    Back
-                  </button>
-                  <button 
-                    className="px-6 py-2 rounded bg-blue-600 text-white" 
-                    onClick={onNext}
-                  >
-                    Continue
-                  </button>
-                </div>
-              </div>
-            );
+            return <div>Section not found</div>;
         }
       })()}
     </div>

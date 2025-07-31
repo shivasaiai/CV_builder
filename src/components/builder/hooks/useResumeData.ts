@@ -152,33 +152,101 @@ export const useResumeData = () => {
   }, []);
 
   const importResumeData = useCallback((importedData: Partial<ResumeData>) => {
+    console.log('=== useResumeData.importResumeData ===');
+    console.log('Importing data:', importedData);
+    
     setResumeData(prev => {
+      console.log('Current resumeData before import:', prev);
+      
+      // Enhanced work experience merging logic
+      let mergedWorkExperiences = prev.workExperiences;
+      
+      if (importedData.workExperiences && importedData.workExperiences.length > 0) {
+        console.log('=== VALIDATING IMPORTED WORK EXPERIENCES ===');
+        console.log('importedData.workExperiences:', importedData.workExperiences);
+        
+        // Enhanced validation - check each experience in detail
+        const validImportedExperiences = importedData.workExperiences.filter((exp, index) => {
+          console.log(`Checking experience ${index}:`, exp);
+          
+          const hasJobTitle = exp.jobTitle && exp.jobTitle.toString().trim().length > 0;
+          const hasEmployer = exp.employer && exp.employer.toString().trim().length > 0;
+          const hasLocation = exp.location && exp.location.toString().trim().length > 0;
+          const hasAccomplishments = exp.accomplishments && exp.accomplishments.toString().trim().length > 0;
+          
+          console.log(`  - Has jobTitle: ${hasJobTitle} ("${exp.jobTitle}")`);
+          console.log(`  - Has employer: ${hasEmployer} ("${exp.employer}")`);
+          console.log(`  - Has location: ${hasLocation} ("${exp.location}")`);
+          console.log(`  - Has accomplishments: ${hasAccomplishments} (${exp.accomplishments?.length || 0} chars)`);
+          
+          // Consider valid if it has ANY meaningful content
+          const isValid = hasJobTitle || hasEmployer || hasLocation || hasAccomplishments;
+          console.log(`  - Experience ${index} is valid: ${isValid}`);
+          
+          return isValid;
+        });
+        
+        console.log('Valid experiences after filtering:', validImportedExperiences.length);
+        
+        if (validImportedExperiences.length > 0) {
+          console.log('Found valid imported work experiences:', validImportedExperiences.length);
+          // Replace with imported experiences if they have actual data
+          mergedWorkExperiences = validImportedExperiences.map((exp, index) => ({
+            ...exp,
+            id: exp.id || Date.now() + index, // Ensure unique IDs
+          }));
+          console.log('Merged work experiences:', mergedWorkExperiences);
+        } else {
+          console.log('No valid work experiences found in import, keeping existing');
+          // Keep existing if imported are empty
+        }
+      } else {
+        console.log('No work experiences in imported data, keeping existing');
+      }
+      
+      // Enhanced education merging logic
+      let mergedEducation = { ...prev.education };
+      
+      if (importedData.education) {
+        // Only merge fields that have actual values
+        Object.keys(importedData.education).forEach(key => {
+          const value = importedData.education[key as keyof typeof importedData.education];
+          if (value && value.toString().trim()) {
+            mergedEducation[key as keyof typeof mergedEducation] = value;
+          }
+        });
+        console.log('Merged education:', mergedEducation);
+      }
+      
+      // Enhanced skills merging
+      let mergedSkills = prev.skills;
+      if (importedData.skills && importedData.skills.length > 0) {
+        // Combine existing and imported skills, removing duplicates
+        const combinedSkills = [...prev.skills, ...importedData.skills];
+        mergedSkills = [...new Set(combinedSkills)]; // Remove duplicates
+        console.log('Merged skills:', mergedSkills.length, 'total skills');
+      }
+      
       const newData = {
         ...prev,
         contact: {
           ...prev.contact,
           ...importedData.contact,
         },
-        education: {
-          ...prev.education,
-          ...importedData.education,
-        },
-        workExperiences: importedData.workExperiences && importedData.workExperiences.length > 0 
-          ? importedData.workExperiences 
-          : [{
-              id: 1,
-              jobTitle: "",
-              employer: "",
-              location: "",
-              remote: false,
-              startDate: null,
-              endDate: null,
-              current: false,
-              accomplishments: "",
-            }],
-        skills: importedData.skills ? importedData.skills : prev.skills,
-        summary: importedData.summary !== undefined ? importedData.summary : prev.summary,
+        education: mergedEducation,
+        workExperiences: mergedWorkExperiences,
+        skills: mergedSkills,
+        summary: importedData.summary && importedData.summary.trim() 
+          ? importedData.summary 
+          : prev.summary,
       };
+      
+      console.log('=== FINAL MERGED DATA ===');
+      console.log('Work Experiences:', newData.workExperiences.length);
+      console.log('Education:', newData.education);
+      console.log('Skills:', newData.skills.length);
+      console.log('Summary length:', newData.summary.length);
+      
       return newData;
     });
   }, []);
