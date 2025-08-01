@@ -3,6 +3,7 @@ import { PDFParsingStrategy } from './strategies/PDFParsingStrategy';
 import { DOCXParsingStrategy } from './strategies/DOCXParsingStrategy';
 import { TextParsingStrategy } from './strategies/TextParsingStrategy';
 import { OCRParsingStrategy } from './strategies/OCRParsingStrategy';
+import { createDefaultFallbackOptions } from './DefaultConfiguration';
 
 /**
  * Factory class for creating and managing parsing strategies
@@ -45,11 +46,36 @@ export class StrategyFactory {
    * Setup fallback chain based on configuration
    */
   private setupFallbackChain(): void {
-    this.fallbackChain = this.configuration.fallbackOptions.sort(
-      (a, b) => b.priority - a.priority
-    );
+    // If no fallback options provided, use defaults
+    if (this.configuration.fallbackOptions.length === 0) {
+      const defaultFallbacks = createDefaultFallbackOptions();
+      this.fallbackChain = defaultFallbacks.map(fallback => ({
+        ...fallback,
+        strategy: this.getStrategyForFallback(fallback.name)
+      })).filter(fallback => fallback.strategy !== null) as FallbackOption[];
+    } else {
+      this.fallbackChain = this.configuration.fallbackOptions.sort(
+        (a, b) => b.priority - a.priority
+      );
+    }
 
     console.log('Fallback chain configured:', this.fallbackChain.map(f => f.name));
+  }
+
+  /**
+   * Get appropriate strategy for fallback option
+   */
+  private getStrategyForFallback(fallbackName: string): ParsingStrategy | null {
+    switch (fallbackName) {
+      case 'pdf_to_ocr_fallback':
+      case 'image_to_ocr_fallback':
+      case 'generic_ocr_fallback':
+        return this.strategies.get('OCR Parser') || null;
+      case 'docx_to_text_fallback':
+        return this.strategies.get('Text Parser') || null;
+      default:
+        return null;
+    }
   }
 
   /**

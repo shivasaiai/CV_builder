@@ -52,6 +52,17 @@ const initialResumeData: ResumeData = {
     publications: false,
     awards: false,
     references: false
+  },
+  theme: {
+    template: 'MinimalModern',
+    colors: {
+      primary: '#000000',
+      secondary: '#666666',
+      accent: '#007BFF',
+      background: '#FFFFFF',
+      text: '#333333'
+    },
+    font: 'sans-serif'
   }
 };
 
@@ -134,6 +145,13 @@ export const useResumeData = () => {
     setResumeData(prev => ({
       ...prev,
       skills: prev.skills.filter(s => s !== skill)
+    }));
+  }, []);
+
+  const updateTheme = useCallback((theme: Partial<ResumeData['theme']>) => {
+    setResumeData(prev => ({
+      ...prev,
+      theme: { ...prev.theme, ...theme }
     }));
   }, []);
 
@@ -265,6 +283,68 @@ export const useResumeData = () => {
     return Math.round((completed / 5) * 100);
   }, [resumeData]);
 
+  // Section validation functions
+  const validateSection = useCallback((sectionIndex: number): boolean => {
+    const sectionNames = ['heading', 'experience', 'education', 'skills', 'summary', 'finalize'];
+    const sectionName = sectionNames[sectionIndex];
+    
+    switch (sectionName) {
+      case 'heading':
+        return !!(resumeData.contact.firstName && resumeData.contact.lastName && 
+                 resumeData.contact.email && resumeData.contact.phone);
+      case 'experience':
+        return resumeData.workExperiences.length > 0 && 
+               resumeData.workExperiences.some(exp => exp.jobTitle && exp.employer);
+      case 'education':
+        return !!(resumeData.education.school && resumeData.education.degree);
+      case 'skills':
+        return resumeData.skills.length >= 3;
+      case 'summary':
+        return true; // Summary is optional
+      case 'finalize':
+        return validateSection(0) && validateSection(1) && validateSection(2) && validateSection(3);
+      default:
+        return true;
+    }
+  }, [resumeData]);
+
+  const getValidationErrors = useCallback((sectionIndex: number): string[] => {
+    const sectionNames = ['heading', 'experience', 'education', 'skills', 'summary', 'finalize'];
+    const sectionName = sectionNames[sectionIndex];
+    const errors: string[] = [];
+    
+    switch (sectionName) {
+      case 'heading':
+        if (!resumeData.contact.firstName) errors.push('First name is required');
+        if (!resumeData.contact.lastName) errors.push('Last name is required');
+        if (!resumeData.contact.email) errors.push('Email is required');
+        if (!resumeData.contact.phone) errors.push('Phone number is required');
+        break;
+      case 'experience':
+        if (resumeData.workExperiences.length === 0) {
+          errors.push('At least one work experience is required');
+        } else if (!resumeData.workExperiences.some(exp => exp.jobTitle && exp.employer)) {
+          errors.push('Please complete at least one work experience');
+        }
+        break;
+      case 'education':
+        if (!resumeData.education.school) errors.push('School name is required');
+        if (!resumeData.education.degree) errors.push('Degree is required');
+        break;
+      case 'skills':
+        if (resumeData.skills.length < 3) errors.push('At least 3 skills are recommended');
+        break;
+      case 'finalize':
+        if (!validateSection(0)) errors.push('Complete the heading section');
+        if (!validateSection(1)) errors.push('Complete the experience section');
+        if (!validateSection(2)) errors.push('Complete the education section');
+        if (!validateSection(3)) errors.push('Complete the skills section');
+        break;
+    }
+    
+    return errors;
+  }, [resumeData, validateSection]);
+
   return {
     resumeData,
     resumeCompleteness,
@@ -277,8 +357,11 @@ export const useResumeData = () => {
     updateSkills,
     addSkill,
     removeSkill,
+    updateTheme,
     updateSummary,
     updateActiveSections,
     importResumeData,
+    validateSection,
+    getValidationErrors,
   };
 }; 

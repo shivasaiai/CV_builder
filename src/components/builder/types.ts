@@ -71,6 +71,11 @@ export interface ResumeData {
   awards: unknown[];
   references: unknown[];
   activeSections: ActiveSections;
+  theme: {
+    template: string;
+    colors: TemplateColors;
+    font: string;
+  };
 }
 
 export interface BuilderState {
@@ -98,6 +103,7 @@ export interface SectionProps {
   updateBuilderState: (state: Partial<BuilderState>) => void;
   onNext: () => void;
   onBack: () => void;
+  onUploadClick?: () => void;
 }
 
 export type SectionType = 'Heading' | 'Experience' | 'Education' | 'Skills' | 'Summary' | 'Finalize';

@@ -1,180 +1,32 @@
-import { useState, useEffect } from "react";
-import { useParams, useSearchParams } from "react-router-dom";
-import { 
-  BuilderSidebar, 
-  SectionRenderer, 
-  ResumePreview,
-  useBuilderState,
-  useResumeData,
-  useTemplateManager,
-  SECTIONS 
-} from "@/components/builder";
-import ResumeUpload from "@/components/builder/ResumeUpload";
-import { ResumeData } from "@/components/builder/types";
+import SimpleBuilder from "@/components/builder/SimpleBuilder";
+import { Suspense } from 'react';
 
 const BuilderNew = () => {
-  const { sessionId } = useParams();
-  const [searchParams] = useSearchParams();
-  const [showUploadModal, setShowUploadModal] = useState(false);
-  
-  // Custom hooks for state management
-  const {
-    builderState,
-    updateBuilderState,
-    setActiveSection,
-    setActiveTemplate,
-    setTemplateColors,
-    goToNextSection,
-    goToPreviousSection,
-    toggleColorEditor,
-  } = useBuilderState();
-
-  const {
-    resumeData,
-    resumeCompleteness,
-    updateResumeData,
-    importResumeData,
-  } = useResumeData();
-
-  const { templateNames } = useTemplateManager(
-    builderState.activeTemplate,
-    setActiveTemplate
-  );
-
-  const currentSection = SECTIONS[builderState.activeIndex];
-
-  // Handle color from URL parameters on mount
-  useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const colorParam = urlParams.get('color');
-    if (colorParam) {
-      const decodedColor = decodeURIComponent(colorParam);
-      // Set the primary color and update template colors
-      setTemplateColors({
-        ...builderState.templateColors,
-        primary: decodedColor
-      });
-    }
-  }, []); // Run only on mount
-
-  // Navigation handlers
-  const handleSectionClick = (index: number) => {
-    setActiveSection(index);
-  };
-
-  const handleTemplateChange = (template: string) => {
-    setActiveTemplate(template);
-  };
-
-  const handleNext = () => {
-    goToNextSection();
-  };
-
-  const handleBack = () => {
-    goToPreviousSection();
-  };
-
-  const handleUploadClick = () => {
-    setShowUploadModal(true);
-  };
-
-  const handleResumeUploaded = (importedData: Partial<ResumeData>) => {
-    console.log('=== BuilderNew.handleResumeUploaded ===');
-    console.log('Received importedData:', importedData);
-    console.log('Work experiences in imported data:', importedData.workExperiences?.length || 0);
-    if (importedData.workExperiences && importedData.workExperiences.length > 0) {
-      console.log('First work experience:', importedData.workExperiences[0]);
-    }
-    
-    importResumeData(importedData);
-    setShowUploadModal(false);
-    // Navigate to first section to review imported data
-    setActiveSection(0);
-    
-    console.log('Called importResumeData and navigated to section 0');
-  };
-
-  const handleCloseUpload = () => {
-    setShowUploadModal(false);
-  };
-
-  return (
-    <div className="flex min-h-screen bg-[#F4F7F9]">
-      {/* Sidebar */}
-      <BuilderSidebar
-        activeIndex={builderState.activeIndex}
-        resumeCompleteness={resumeCompleteness}
-        activeTemplate={builderState.activeTemplate}
-        availableTemplates={templateNames}
-        onSectionClick={handleSectionClick}
-        onTemplateChange={handleTemplateChange}
-        onUploadClick={handleUploadClick}
-      />
-
-      {/* Main Content */}
-      <main className="flex-1 p-12 flex">
-        <div className="w-2/3 pr-8">
-          <div className="mb-8">
-            <button onClick={handleBack} className="text-blue-500">
-              &larr; Go Back
-            </button>
-          </div>
-
-          {currentSection ? (
-            <SectionRenderer
-              activeSection={currentSection}
-              resumeData={resumeData}
-              builderState={builderState}
-              updateResumeData={updateResumeData}
-              updateBuilderState={updateBuilderState}
-              onNext={handleNext}
-              onBack={handleBack}
-              onUploadClick={handleUploadClick}
-            />
-          ) : (
-            <div className="max-w-2xl w-full flex flex-col items-center justify-center h-[80vh]">
-              <h1 className="text-4xl font-bold mb-2 text-red-600">Loading Error</h1>
-              <p className="text-xl text-gray-500 mb-8">
-                Section not found. Please check console for details.
-              </p>
-              <div className="text-sm text-gray-400">
-                <p>Active Index: {builderState.activeIndex}</p>
-                <p>Sections Length: {SECTIONS.length}</p>
-                <p>Current Section: {currentSection || 'undefined'}</p>
-              </div>
-            </div>
-          )}
+  try {
+    return (
+      <Suspense fallback={<div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600"></div>
+      </div>}>
+        <SimpleBuilder />
+      </Suspense>
+    );
+  } catch (error) {
+    console.error('BuilderNew error:', error);
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-6 text-center">
+          <h2 className="text-xl font-semibold text-red-600 mb-4">Error Loading Builder</h2>
+          <p className="text-gray-600 mb-4">There was an error loading the resume builder. Please try refreshing the page.</p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+          >
+            Refresh Page
+          </button>
         </div>
-
-        {/* Live Preview */}
-        {builderState.activeTemplate ? (
-          <ResumePreview
-            resumeData={resumeData}
-            activeTemplate={builderState.activeTemplate}
-            templateColors={builderState.templateColors}
-            showColorEditor={builderState.showColorEditor}
-            onTemplateChange={handleTemplateChange}
-            onColorChange={setTemplateColors}
-            onToggleColorEditor={toggleColorEditor}
-          />
-        ) : (
-          <div className="w-1/3 flex items-center justify-center">
-            <div className="text-center">
-              <h3 className="text-lg font-semibold mb-2">Loading Template...</h3>
-              <p className="text-gray-500">Please wait while we load your template.</p>
-            </div>
-          </div>
-        )}
-      </main>
-
-      {/* Resume Upload Modal */}
-      <ResumeUpload
-        isOpen={showUploadModal}
-        onResumeUploaded={handleResumeUploaded}
-        onClose={handleCloseUpload}
-      />
-    </div>
-  );
+      </div>
+    );
+  }
 };
 
 export default BuilderNew; 

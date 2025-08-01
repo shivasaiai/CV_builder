@@ -14,22 +14,11 @@ const HeroSection = () => {
     setSelectedType(type);
     setOpen(false);
     setIsLoading(true);
-
-    // Show loading animation for 2.5 seconds then go to templates
+    
+    // Show loading animation for 1 second then go to templates
     setTimeout(() => {
-      window.location.href = "/templates";
-    }, 2500);
-
-    // Fire API call in background
-    try {
-      await fetch("", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userType: type }),
-      });
-    } catch (e) {
-      console.error("Failed to update user type", e);
-    }
+      window.location.href = `/templates?userType=${type}`;
+    }, 1000);
   };
 
   return (
@@ -96,7 +85,12 @@ const HeroSection = () => {
                 </DialogContent>
               </Dialog>
 
-              <Button variant="outline" size="lg" className="px-8 py-4 text-lg">
+              <Button 
+                variant="outline" 
+                size="lg" 
+                className="px-8 py-4 text-lg"
+                onClick={() => window.location.href = "/templates"}
+              >
                 View Templates
               </Button>
             </div>
@@ -132,9 +126,9 @@ const HeroSection = () => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-8 max-w-sm w-full mx-4 text-center">
             <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <h3 className="text-lg font-semibold mb-2">Setting Up Your Experience...</h3>
+            <h3 className="text-lg font-semibold mb-2">Preparing Templates...</h3>
             <p className="text-gray-600">
-              Customizing templates for your experience level
+              Loading templates tailored for your experience level
             </p>
           </div>
         </div>

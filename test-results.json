@@ -1,250 +1,102 @@
 {
-  "timestamp": "2025-07-31T21:29:04.595Z",
-  "summary": {
-    "totalTests": 5,
-    "passedTests": 5,
-    "failedTests": 0,
-    "averageScore": 100,
-    "averageTime": 11.2,
-    "totalErrors": 0,
-    "totalWarnings": 0
-  },
+  "testDate": "2025-08-01T04:55:53.315Z",
+  "totalFiles": 5,
+  "validFiles": 5,
   "results": [
     {
-      "fileName": "cvgen.pdf.pdf",
-      "filePath": "design/resume/cvgen.pdf.pdf",
-      "fileSize": 127857,
-      "exists": true,
-      "readable": false,
-      "tests": {
-        "fileAccess": true,
-        "fileSize": true,
-        "fileType": true,
-        "textExtraction": true,
-        "emailExtraction": true,
-        "phoneExtraction": true,
-        "nameExtraction": true,
-        "skillsExtraction": true,
-        "workExperienceExtraction": true,
-        "educationExtraction": true
-      },
-      "extractedData": {
-        "rawText": "JOHN SMITH\nFull Stack Developer\njohn.smith@email.com | (555) 123-4567\nSan Francisco, CA\n\nPROFESSIONAL SUMMARY\n\nExperienced Full Stack Developer with 5+ years of experience in designing and developing scalable web applications.\n\nWORK EXPERIENCE\n\nSenior Full Stack Developer\nTechCorp Inc. | San Francisco, CA\nMarch 2021 - Present\n• Led development of microservices architecture serving 1M+ users\n• Implemented CI/CD pipelines reducing deployment time by 60%\n• Technologies: React, Node.js, AWS, Docker, Kubernetes\n\nFull Stack Developer  \nWebSolutions LLC | San Francisco, CA\nJune 2019 - February 2021\n• Developed responsive web applications using React and Express.js\n• Integrated third-party APIs and payment gateways\n• Technologies: React, Express.js, PostgreSQL, Redis\n\nEDUCATION\n\nMaster of Science in Computer Science\nStanford University | Stanford, CA\n2017 - 2019\n\nTECHNICAL SKILLS\n\nFrontend: React, Vue.js, Angular, TypeScript, HTML5, CSS3\nBackend: Node.js, Python, Java, Express.js, Django\nDatabases: PostgreSQL, MongoDB, Redis, MySQL\nCloud: AWS, Azure, Google Cloud Platform",
-        "textLength": 1080,
-        "emails": [
-          "john.smith@email.com"
-        ],
-        "phones": [
-          " (555) 123-4567\n",
-          "\n2017 - 2019\n\n"
-        ],
-        "potentialNames": [
-          "JOHN SMITH",
-          "Full Stack Developer",
-          "PROFESSIONAL SUMMARY"
-        ],
-        "skills": [
-          "Python",
-          "Java",
-          "React",
-          "Node.js",
-          "SQL",
-          "HTML",
-          "CSS"
-        ]
-      },
-      "errors": [],
-      "warnings": [],
-      "processingTime": 5,
-      "score": 100
-    },
-    {
-      "fileName": "balacv.pdf",
-      "filePath": "design/resume/balacv.pdf",
+      "filename": "balacv.pdf",
+      "filepath": "design/resume/balacv.pdf",
       "fileSize": 1225731,
       "exists": true,
-      "readable": false,
-      "tests": {
-        "fileAccess": true,
-        "fileSize": true,
-        "fileType": true,
-        "textExtraction": true,
-        "emailExtraction": true,
-        "phoneExtraction": true,
-        "nameExtraction": true,
-        "skillsExtraction": true,
-        "workExperienceExtraction": true,
-        "educationExtraction": true
-      },
+      "parseSuccess": false,
+      "errorMessage": null,
       "extractedData": {
-        "rawText": "BALA KRISHNA NADIGADDA\nSoftware Engineer\nEmail: bala.krishna@email.com\nPhone: +91-9876543210\nLocation: Hyderabad, India\n\nPROFESSIONAL EXPERIENCE\n\nSoftware Engineer at Tech Solutions Pvt Ltd\nHyderabad, India\nJune 2020 - Present\n• Developed and maintained web applications using React and Node.js\n• Collaborated with cross-functional teams to deliver high-quality software solutions\n• Implemented responsive designs and optimized application performance\n\nJunior Developer at StartUp Inc\nBangalore, India  \nJanuary 2019 - May 2020\n• Built frontend components using HTML, CSS, and JavaScript\n• Worked on REST API integration and database optimization\n\nEDUCATION\n\nBachelor of Technology in Computer Science\nJawaharlal Nehru Technological University\nHyderabad, India\n2015 - 2019\n\nSKILLS\n\nJavaScript, React, Node.js, HTML, CSS, Python, SQL, MongoDB, Git, AWS\n\nSUMMARY\n\nExperienced software engineer with 4+ years in web development. Skilled in modern JavaScript frameworks and backend technologies.",
-        "textLength": 991,
-        "emails": [
-          "bala.krishna@email.com"
-        ],
-        "phones": [
-          "+91-9876543210\n",
-          "\n2015 - 2019\n\n"
-        ],
-        "potentialNames": [
-          "BALA KRISHNA NADIGADDA",
-          "Software Engineer"
-        ],
-        "skills": [
-          "JavaScript",
-          "Python",
-          "Java",
-          "React",
-          "Node.js",
-          "SQL",
-          "HTML",
-          "CSS"
-        ]
+        "contact": false,
+        "workExperience": false,
+        "education": false,
+        "skills": false,
+        "summary": false
       },
-      "errors": [],
-      "warnings": [],
-      "processingTime": 9,
-      "score": 100
+      "processingTime": 0,
+      "notes": [
+        "File passed basic validation - needs browser testing"
+      ]
     },
     {
-      "fileName": "shivacv.pdf",
-      "filePath": "design/resume/shivacv.pdf",
-      "fileSize": 149169,
+      "filename": "cvgen.pdf.pdf",
+      "filepath": "design/resume/cvgen.pdf.pdf",
+      "fileSize": 127857,
       "exists": true,
-      "readable": false,
-      "tests": {
-        "fileAccess": true,
-        "fileSize": true,
-        "fileType": true,
-        "textExtraction": true,
-        "emailExtraction": true,
-        "phoneExtraction": true,
-        "nameExtraction": true,
-        "skillsExtraction": true,
-        "workExperienceExtraction": true,
-        "educationExtraction": true
-      },
+      "parseSuccess": false,
+      "errorMessage": null,
       "extractedData": {
-        "rawText": "SHIVA SAI NADIGADDA\nData Scientist\nshiva.sai@email.com\n+91-8765432109\nChennai, Tamil Nadu, India\n\nOBJECTIVE\n\nSeeking a challenging position as a Data Scientist where I can utilize my analytical skills and machine learning expertise.\n\nPROFESSIONAL EXPERIENCE\n\nData Scientist\nAnalytics Corp | Chennai, India\nAugust 2021 - Present\n• Developed machine learning models for predictive analytics\n• Analyzed large datasets to identify trends and patterns\n• Created data visualizations and dashboards for stakeholders\n\nData Analyst\nInsights Ltd | Chennai, India\nJanuary 2020 - July 2021\n• Performed statistical analysis on customer data\n• Built automated reporting systems using Python\n• Collaborated with business teams to define KPIs\n\nEDUCATION\n\nMaster of Technology in Data Science\nIndian Institute of Technology, Madras\nChennai, India\n2018 - 2020\n\nTECHNICAL SKILLS\n\nProgramming: Python, R, SQL, Java\nMachine Learning: Scikit-learn, TensorFlow, PyTorch, Keras\nData Visualization: Tableau, Power BI, Matplotlib, Seaborn\nDatabases: MySQL, PostgreSQL, MongoDB\nCloud Platforms: AWS, Google Cloud Platform",
-        "textLength": 1094,
-        "emails": [
-          "shiva.sai@email.com"
-        ],
-        "phones": [
-          "+91-8765432109\n",
-          "\n2018 - 2020\n\n"
-        ],
-        "potentialNames": [
-          "SHIVA SAI NADIGADDA",
-          "Data Scientist"
-        ],
-        "skills": [
-          "Python",
-          "Java",
-          "SQL"
-        ]
+        "contact": false,
+        "workExperience": false,
+        "education": false,
+        "skills": false,
+        "summary": false
       },
-      "errors": [],
-      "warnings": [],
-      "processingTime": 3,
-      "score": 100
+      "processingTime": 0,
+      "notes": [
+        "File passed basic validation - needs browser testing"
+      ]
     },
     {
-      "fileName": "resume (5).pdf",
-      "filePath": "design/resume/resume (5).pdf",
+      "filename": "resume (5).pdf",
+      "filepath": "design/resume/resume (5).pdf",
       "fileSize": 1132256,
       "exists": true,
-      "readable": false,
-      "tests": {
-        "fileAccess": true,
-        "fileSize": true,
-        "fileType": true,
-        "textExtraction": true,
-        "emailExtraction": true,
-        "phoneExtraction": true,
-        "nameExtraction": true,
-        "skillsExtraction": true,
-        "workExperienceExtraction": true,
-        "educationExtraction": true
-      },
+      "parseSuccess": false,
+      "errorMessage": null,
       "extractedData": {
-        "rawText": "SAMPLE RESUME\nSoftware Developer\nsample@email.com | (555) 000-0000\n\nEXPERIENCE\nSoftware Developer at Company Inc\n2020 - Present\n• Developed applications using JavaScript and Python\n• Worked with databases and APIs\n\nEDUCATION\nBachelor of Science in Computer Science\nUniversity Name\n2016 - 2020\n\nSKILLS\nJavaScript, Python, HTML, CSS, SQL, Git",
-        "textLength": 340,
-        "emails": [
-          "sample@email.com"
-        ],
-        "phones": [
-          " (555) 000-0000\n\n",
-          "\n2016 - 2020\n\n"
-        ],
-        "potentialNames": [
-          "SAMPLE RESUME",
-          "Software Developer",
-          "EXPERIENCE",
-          "Software Developer at Company Inc"
-        ],
-        "skills": [
-          "JavaScript",
-          "Python",
-          "Java",
-          "SQL",
-          "HTML",
-          "CSS"
-        ]
+        "contact": false,
+        "workExperience": false,
+        "education": false,
+        "skills": false,
+        "summary": false
       },
-      "errors": [],
-      "warnings": [],
-      "processingTime": 6,
-      "score": 100
+      "processingTime": 0,
+      "notes": [
+        "File passed basic validation - needs browser testing"
+      ]
     },
     {
-      "fileName": "resume (7).pdf",
-      "filePath": "design/resume/resume (7).pdf",
+      "filename": "resume (7).pdf",
+      "filepath": "design/resume/resume (7).pdf",
       "fileSize": 1486713,
       "exists": true,
-      "readable": false,
-      "tests": {
-        "fileAccess": true,
-        "fileSize": true,
-        "fileType": true,
-        "textExtraction": true,
-        "emailExtraction": true,
-        "phoneExtraction": true,
-        "nameExtraction": true,
-        "skillsExtraction": true,
-        "workExperienceExtraction": true,
-        "educationExtraction": true
-      },
+      "parseSuccess": false,
+      "errorMessage": null,
       "extractedData": {
-        "rawText": "SAMPLE RESUME\nSoftware Developer\nsample@email.com | (555) 000-0000\n\nEXPERIENCE\nSoftware Developer at Company Inc\n2020 - Present\n• Developed applications using JavaScript and Python\n• Worked with databases and APIs\n\nEDUCATION\nBachelor of Science in Computer Science\nUniversity Name\n2016 - 2020\n\nSKILLS\nJavaScript, Python, HTML, CSS, SQL, Git",
-        "textLength": 340,
-        "emails": [
-          "sample@email.com"
-        ],
-        "phones": [
-          " (555) 000-0000\n\n",
-          "\n2016 - 2020\n\n"
-        ],
-        "potentialNames": [
-          "SAMPLE RESUME",
-          "Software Developer",
-          "EXPERIENCE",
-          "Software Developer at Company Inc"
-        ],
-        "skills": [
-          "JavaScript",
-          "Python",
-          "Java",
-          "SQL",
-          "HTML",
-          "CSS"
-        ]
+        "contact": false,
+        "workExperience": false,
+        "education": false,
+        "skills": false,
+        "summary": false
       },
-      "errors": [],
-      "warnings": [],
-      "processingTime": 33,
-      "score": 100
+      "processingTime": 0,
+      "notes": [
+        "File passed basic validation - needs browser testing"
+      ]
+    },
+    {
+      "filename": "shivacv.pdf",
+      "filepath": "design/resume/shivacv.pdf",
+      "fileSize": 149169,
+      "exists": true,
+      "parseSuccess": false,
+      "errorMessage": null,
+      "extractedData": {
+        "contact": false,
+        "workExperience": false,
+        "education": false,
+        "skills": false,
+        "summary": false
+      },
+      "processingTime": 0,
+      "notes": [
+        "File passed basic validation - needs browser testing"
+      ]
     }
-  ],
-  "recommendations": []
+  ]
 }

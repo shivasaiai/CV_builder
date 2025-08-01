@@ -2512,4 +2512,9 @@ export class EnhancedResumeParser {
     console.log(result);
     return result;
   }
+
+  // Public method to parse text content directly
+  static parseTextContent(text: string): ParsedResumeData {
+    return this.parseText(text);
+  }
 } 

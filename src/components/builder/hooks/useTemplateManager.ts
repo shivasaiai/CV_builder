@@ -64,8 +64,18 @@ export const useTemplateManager = (
     return templateName in AVAILABLE_TEMPLATES;
   };
 
+  const templateFeatures = {
+    [activeTemplate]: {
+      supportsColors: true,
+      supportsCustomSections: true,
+      maxSections: 10,
+      supportedFormats: ['pdf', 'docx']
+    }
+  };
+
   return {
     templateNames,
+    templateFeatures,
     getTemplateComponent,
     isValidTemplate,
     availableTemplates: AVAILABLE_TEMPLATES

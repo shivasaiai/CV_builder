@@ -31,17 +31,18 @@ This feature enhances the resume builder application to provide better PDF parsi
 5. WHEN contact information is detected THEN the system SHALL populate the personal information section accurately
 6. IF section identification is uncertain THEN the system SHALL provide suggestions for manual placement
 
-### Requirement 3: Enhanced Preview UI Design
+### Requirement 3: Enhanced Preview UI Design and Layout
 
-**User Story:** As a user, I want a clean, professional preview interface that efficiently displays my resume without unnecessary scrolling or layout issues, so that I can easily review and make adjustments.
+**User Story:** As a user, I want a clean, professional preview interface positioned at the top of the page with optimal default zoom and efficient layout, so that I can easily review and make adjustments without scrolling issues.
 
 #### Acceptance Criteria
 
-1. WHEN viewing the resume preview THEN the system SHALL display content in a fixed, scrollable container
-2. WHEN sections are populated THEN the system SHALL prevent excessive vertical expansion that breaks the layout
-3. WHEN the preview is displayed THEN the system SHALL maintain proper spacing and typography consistency
-4. WHEN multiple templates are available THEN the system SHALL allow seamless switching without layout breaks
-5. WHEN content overflows THEN the system SHALL handle it gracefully with proper scrolling mechanisms
+1. WHEN viewing the resume preview THEN the system SHALL position the preview at the top of the page, not in the middle
+2. WHEN the preview loads THEN the system SHALL set the default zoom level to 40% for optimal viewing
+3. WHEN sections are populated THEN the system SHALL prevent excessive vertical expansion that breaks the layout
+4. WHEN the preview is displayed THEN the system SHALL maintain proper spacing and typography consistency
+5. WHEN multiple templates are available THEN the system SHALL allow seamless switching without layout breaks
+6. WHEN content overflows THEN the system SHALL handle it gracefully with proper scrolling mechanisms
 
 ### Requirement 4: Progressive Completion Flow with Visual Indicators
 

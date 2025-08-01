@@ -41,7 +41,68 @@ graph TB
 
 ## Components and Interfaces
 
-### 1. Enhanced PDF Parser Service
+### 5. Template Grid System with Color Customization
+
+**Template Grid Architecture:**
+```typescript
+interface TemplateGridSystem {
+  gridManager: GridManager;
+  templateRenderer: TemplateRenderer;
+  colorCustomizer: ColorCustomizer;
+  templateSwitcher: TemplateSwitcher;
+}
+
+interface GridManager {
+  displayMode: 'grid' | 'list';
+  templatesPerRow: number;
+  showAllTemplates: boolean;
+  filterOptions: FilterOption[];
+  searchCapability: boolean;
+}
+
+interface ColorCustomizer {
+  colorPalettes: ColorPalette[];
+  customColorPicker: boolean;
+  previewMode: 'realtime' | 'onApply';
+  colorHistory: string[];
+  themePresets: ThemePreset[];
+}
+
+interface TemplateSwitcher {
+  preserveData: boolean;
+  preserveColors: boolean;
+  switchAnimation: boolean;
+  validationBeforeSwitch: boolean;
+}
+```
+
+**Clean Color Interface Design:**
+```typescript
+interface ColorInterface {
+  layout: 'sidebar' | 'modal' | 'inline';
+  style: 'minimal' | 'professional' | 'compact';
+  colorPreview: boolean;
+  undoRedo: boolean;
+  presetManagement: boolean;
+}
+
+interface ColorPalette {
+  id: string;
+  name: string;
+  colors: {
+    primary: string;
+    secondary: string;
+    accent: string;
+    text: string;
+    background: string;
+  };
+  category: 'professional' | 'creative' | 'modern' | 'classic';
+}
+```
+
+## Components and Interfaces
+
+### 1. Robust PDF Parser Service with Advanced Error Handling
 
 **Multi-Strategy Parsing Architecture:**
 ```typescript
@@ -49,23 +110,60 @@ interface ParsingStrategy {
   name: string;
   priority: number;
   canHandle: (file: File) => boolean;
-  parse: (file: File, onProgress?: ProgressCallback) => Promise<string>;
+  parse: (file: File, onProgress?: ProgressCallback) => Promise<ParseResult>;
+  fallbackStrategies: string[];
+}
+
+interface ParseResult {
+  success: boolean;
+  content: string;
+  confidence: number;
+  method: string;
+  errors: ParseError[];
+  warnings: ParseWarning[];
 }
 
 interface EnhancedParserConfig {
   strategies: ParsingStrategy[];
-  fallbackOptions: FallbackOption[];
+  fallbackChain: FallbackChain[];
   ocrSettings: OCRConfiguration;
   validationRules: ValidationRule[];
+  errorRecovery: ErrorRecoveryConfig;
+}
+
+interface ErrorRecoveryConfig {
+  maxRetries: number;
+  alternativeStrategies: AlternativeStrategy[];
+  userGuidance: UserGuidanceConfig;
+  diagnostics: DiagnosticConfig;
+}
+```
+
+**Advanced Error Handling:**
+```typescript
+interface ParseError {
+  type: 'password_protected' | 'corrupted_file' | 'unsupported_format' | 'ocr_failed' | 'no_text_found';
+  message: string;
+  userMessage: string;
+  suggestedActions: string[];
+  recoverable: boolean;
+}
+
+interface UserGuidanceConfig {
+  showDiagnostics: boolean;
+  provideAlternatives: boolean;
+  enableManualEntry: boolean;
+  contactSupport: boolean;
 }
 ```
 
 **Key Improvements:**
-- Multiple parsing strategies with fallback mechanisms
+- Multiple parsing strategies with intelligent fallback chains
 - Enhanced OCR with preprocessing for image-based PDFs
-- Better error handling and user feedback
-- Support for password-protected PDFs with user guidance
-- Improved text extraction accuracy
+- Comprehensive error classification and recovery
+- Detailed user guidance instead of generic error messages
+- Support for various PDF formats and structures
+- Diagnostic information for troubleshooting
 
 ### 2. Intelligent Data Section Placement
 
@@ -122,7 +220,7 @@ interface ProgressFlowProps {
 }
 ```
 
-### 4. Enhanced Preview System
+### 4. Enhanced Preview System with Top Positioning
 
 **Preview Container Architecture:**
 ```typescript
@@ -131,13 +229,34 @@ interface PreviewSystem {
   scaleManager: ScaleManager;
   templateRenderer: TemplateRenderer;
   realTimeUpdater: RealTimeUpdater;
+  positionManager: PositionManager;
 }
 
 interface PreviewContainer {
+  position: 'top' | 'middle' | 'side';
+  defaultZoom: number; // 40% default
   fixedHeight: boolean;
   scrollable: boolean;
   responsive: boolean;
   zoomControls: boolean;
+}
+
+interface PositionManager {
+  setPreviewPosition: (position: 'top' | 'middle' | 'side') => void;
+  getOptimalLayout: (screenSize: ScreenSize) => LayoutConfig;
+  handleResponsiveChanges: () => void;
+}
+```
+
+**Layout Configuration:**
+```typescript
+interface LayoutConfig {
+  previewPosition: 'top' | 'side';
+  previewWidth: string;
+  previewHeight: string;
+  defaultZoom: number;
+  builderPosition: 'bottom' | 'side';
+  builderWidth: string;
 }
 ```
 
@@ -217,28 +336,67 @@ interface ErrorRecoveryStrategy {
 }
 ```
 
-### User-Friendly Error Messages
+### Comprehensive Error Messages and Recovery
 
 ```typescript
 const ERROR_MESSAGES = {
   PDF_PASSWORD_PROTECTED: {
     title: "Password Protected PDF",
-    message: "This PDF requires a password. Please provide an unlocked version.",
-    actions: ["Try different file", "Remove password", "Contact support"]
+    message: "This PDF requires a password. Please provide an unlocked version or remove the password protection.",
+    actions: ["Upload unlocked version", "Remove password", "Try different file", "Manual entry"],
+    diagnostics: "File appears to be encrypted with password protection"
   },
   
   PDF_IMAGE_BASED: {
     title: "Image-Based PDF Detected",
-    message: "This PDF contains scanned images. We'll use OCR to extract text.",
-    actions: ["Continue with OCR", "Upload text-based version"]
+    message: "This PDF contains scanned images. We'll use advanced OCR to extract text - this may take a moment.",
+    actions: ["Continue with OCR", "Upload text-based version", "Try different format"],
+    diagnostics: "PDF contains primarily images/scanned content"
   },
   
-  INSUFFICIENT_TEXT: {
-    title: "Limited Text Found",
-    message: "We found very little text in your resume. Please check the file quality.",
-    actions: ["Try again", "Upload different format", "Manual entry"]
+  PDF_CORRUPTED: {
+    title: "File Processing Error",
+    message: "The PDF file appears to be corrupted or damaged. Please try uploading a different version.",
+    actions: ["Try different file", "Re-download original", "Convert to different format", "Manual entry"],
+    diagnostics: "File structure appears damaged or incomplete"
+  },
+  
+  PDF_COMPLEX_LAYOUT: {
+    title: "Complex Layout Detected",
+    message: "This resume has a complex layout. We're using advanced parsing - some formatting may need manual adjustment.",
+    actions: ["Continue parsing", "Try simpler format", "Manual review recommended"],
+    diagnostics: "Multiple columns, tables, or complex formatting detected"
+  },
+  
+  PDF_NO_TEXT: {
+    title: "No Readable Text Found",
+    message: "We couldn't extract readable text from this PDF. It may be an image-only file or have unusual formatting.",
+    actions: ["Try OCR extraction", "Upload different format", "Manual entry", "Check file quality"],
+    diagnostics: "No extractable text content found using standard methods"
+  },
+  
+  PDF_UNSUPPORTED_VERSION: {
+    title: "PDF Version Not Supported",
+    message: "This PDF uses a newer format that requires updated processing. Please try converting to a standard PDF format.",
+    actions: ["Convert PDF format", "Save as standard PDF", "Try different file", "Manual entry"],
+    diagnostics: "PDF version or features not supported by current parser"
+  },
+  
+  GENERIC_PARSING_ERROR: {
+    title: "Processing Error",
+    message: "We encountered an unexpected error while processing your resume. Our team has been notified.",
+    actions: ["Try again", "Upload different format", "Manual entry", "Contact support"],
+    diagnostics: "Unexpected error during parsing process"
   }
 };
+
+interface ErrorRecoveryFlow {
+  primaryAction: string;
+  alternativeActions: string[];
+  diagnosticInfo: string;
+  userGuidance: string;
+  supportContact: boolean;
+}
 ```
 
 ## Testing Strategy
@@ -344,32 +502,40 @@ interface TestFile {
 
 ## Implementation Phases
 
-### Phase 1: Enhanced PDF Parser (Priority: High)
-- Implement multi-strategy parsing
-- Add comprehensive error handling
-- Improve OCR capabilities
-- Test with problematic files like resume(7).pdf
+### Phase 1: Robust PDF Parser with Advanced Error Handling (Priority: High)
+- Implement multi-strategy parsing with intelligent fallback chains
+- Add comprehensive error classification and recovery mechanisms
+- Improve OCR capabilities with preprocessing and validation
+- Create detailed diagnostic and user guidance systems
+- Test with various problematic files and edge cases
 
-### Phase 2: Data Placement Intelligence (Priority: High)
+### Phase 2: Preview Layout Redesign (Priority: High)
+- Reposition preview to top of page with optimal layout
+- Implement 40% default zoom with smooth scaling controls
+- Create responsive layout system for different screen sizes
+- Optimize preview performance and real-time updates
+
+### Phase 3: Template Grid and Color Customization (Priority: High)
+- Design unified template grid showing all available templates
+- Implement seamless template switching with data preservation
+- Create clean, professional color customization interface
+- Integrate color options into resume building page (not templates page)
+- Add real-time color preview and theme management
+
+### Phase 4: Data Placement Intelligence (Priority: Medium)
 - Develop section classification system
 - Implement confidence scoring
 - Add manual override capabilities
 - Create validation feedback system
 
-### Phase 3: Progressive Flow UI (Priority: Medium)
+### Phase 5: Progressive Flow UI (Priority: Medium)
 - Design visual flow component
 - Implement section status tracking
 - Add connecting line animations
 - Create responsive design
 
-### Phase 4: Preview Enhancement (Priority: Medium)
-- Redesign preview container
-- Implement proper scaling
-- Add zoom controls
-- Optimize for performance
-
-### Phase 5: Polish and Testing (Priority: Low)
-- Comprehensive testing suite
-- Performance optimization
-- Accessibility audit
-- User experience refinement
+### Phase 6: Polish and Testing (Priority: Low)
+- Comprehensive testing suite with various file formats
+- Performance optimization and error handling validation
+- Accessibility audit and compliance verification
+- User experience refinement and feedback integration

@@ -1,32 +1,48 @@
-import { FaPiedPiper } from 'react-icons/fa';
-import { Upload } from 'lucide-react';
-import { SECTIONS } from './types';
+import { Upload, HelpCircle } from 'lucide-react';
+import { SECTIONS, ResumeData } from './types';
+import { useState } from 'react';
 
 interface BuilderSidebarProps {
   activeIndex: number;
   resumeCompleteness: number;
-  activeTemplate: string;
-  availableTemplates: string[];
+  resumeData: ResumeData;
   onSectionClick: (index: number) => void;
-  onTemplateChange: (template: string) => void;
+  onThemeChange: (theme: Partial<ResumeData['theme']>) => void;
   onUploadClick?: () => void;
+  // Enhanced props
+  sections?: any[];
+  errors?: any[];
+  showGuidance?: boolean;
+  onRequestGuidance?: () => void;
+  useProgressiveFlow?: boolean;
 }
 
 const BuilderSidebar = ({
   activeIndex,
   resumeCompleteness,
-  activeTemplate,
-  availableTemplates,
+  resumeData,
   onSectionClick,
-  onTemplateChange,
-  onUploadClick
+  onThemeChange,
+  onUploadClick,
+  sections,
+  errors = [],
+  showGuidance = false,
+  onRequestGuidance,
+  useProgressiveFlow = false
 }: BuilderSidebarProps) => {
+  
   return (
-    <aside className="w-1/4 bg-[#0F172A] text-white flex flex-col p-8">
+    <aside className="h-full bg-slate-900 text-white flex flex-col p-6">
       {/* Logo */}
-      <div className="flex items-center text-2xl font-bold mb-8">
-        <FaPiedPiper className="mr-2" />
-        <span>Pied Piper</span>
+      <div className="flex items-center mb-8 p-4">
+        <div className="flex items-center">
+          <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center mr-3">
+            <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          </div>
+          <span className="text-xl font-bold text-white">zety</span>
+        </div>
       </div>
 
       {/* Upload Resume Button */}
@@ -40,67 +56,96 @@ const BuilderSidebar = ({
         </button>
       )}
 
-      {/* Navigation */}
-      <nav className="flex-1">
-        {SECTIONS.map((section, idx) => (
-          <div key={section} className="flex items-center mb-6">
-            <div 
-              className={`w-8 h-8 rounded-full flex items-center justify-center mr-4 ${
-                activeIndex === idx ? 'bg-blue-500' : 'bg-gray-600'
-              }`}
-            >
-              {idx + 1}
-            </div>
-            <button
-              className={`text-lg ${activeIndex === idx ? 'font-bold' : ''}`}
-              onClick={() => onSectionClick(idx)}
-            >
-              {section}
-            </button>
-          </div>
-        ))}
+      {/* Section Navigation with Progress Line */}
+      <nav className="py-4">
+        <div className="relative">
+          {/* Progress Line */}
+          <div className="absolute left-4 top-6 bottom-6 w-0.5 bg-gray-600"></div>
+          {/* Active Progress Line */}
+          <div 
+            className="absolute left-4 top-6 w-0.5 bg-blue-500 transition-all duration-500"
+            style={{ height: `${(activeIndex + 1) * 60 - 12}px` }}
+          ></div>
+          
+          {SECTIONS.map((section, idx) => {
+            const isCompleted = idx < activeIndex;
+            const isActive = idx === activeIndex;
+
+            return (
+              <div key={section} className="relative flex items-center mb-6">
+                {/* Step Circle */}
+                <button
+                  onClick={() => onSectionClick(idx)}
+                  className={`relative z-10 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all ${
+                    isCompleted 
+                      ? 'bg-blue-500 text-white' 
+                      : isActive 
+                      ? 'bg-blue-600 text-white ring-4 ring-blue-200' 
+                      : 'bg-gray-600 text-gray-300 hover:bg-gray-500'
+                  }`}
+                >
+                  {isCompleted ? (
+                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                  ) : (
+                    idx + 1
+                  )}
+                </button>
+                
+                {/* Step Label */}
+                <button
+                  onClick={() => onSectionClick(idx)}
+                  className={`ml-4 text-left transition-all ${
+                    isActive 
+                      ? 'text-white font-semibold' 
+                      : isCompleted 
+                      ? 'text-gray-300 hover:text-white' 
+                      : 'text-gray-400 hover:text-gray-300'
+                  }`}
+                >
+                  <div className="text-sm font-medium">{section}</div>
+                  {isActive && (
+                    <div className="text-xs text-blue-200 mt-1">Current step</div>
+                  )}
+                  {isCompleted && (
+                    <div className="text-xs text-green-400 mt-1">Completed</div>
+                  )}
+                </button>
+              </div>
+            );
+          })}
+        </div>
       </nav>
 
-      {/* Template Selector */}
-      <div className="mb-8">
-        <div className="text-sm mb-4">TEMPLATE</div>
-        <div className="relative">
-          <select
-            value={activeTemplate}
-            onChange={(e) => onTemplateChange(e.target.value)}
-            className="w-full bg-gray-700 text-white p-2 rounded border border-gray-600 text-sm"
-          >
-            {availableTemplates.map((templateName) => (
-              <option key={templateName} value={templateName}>
-                {templateName}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div className="text-xs text-gray-400 mt-2">
-          Change template anytime
-        </div>
-      </div>
-
       {/* Resume Completeness */}
-      <div className="mb-8">
-        <div className="text-sm mb-2">RESUME COMPLETENESS</div>
-        <div className="w-full bg-gray-600 rounded-full h-2.5">
+      <div className="mb-4 px-4">
+        <div className="text-xs mb-2 text-gray-300 uppercase tracking-wide">Resume Completeness:</div>
+        <div className="w-full bg-slate-700 rounded-full h-2 mb-2">
           <div 
-            className="bg-blue-500 h-2.5 rounded-full transition-all duration-300" 
+            className="bg-teal-400 h-2 rounded-full transition-all duration-500" 
             style={{ width: `${resumeCompleteness}%` }}
           />
         </div>
-        <div className="text-right text-sm mt-1">{resumeCompleteness}%</div>
+        <div className="text-right text-sm font-medium text-white">{resumeCompleteness}%</div>
       </div>
 
+      {/* Help Button */}
+      {onRequestGuidance && (
+        <button
+          onClick={onRequestGuidance}
+          className="w-full mb-4 px-3 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-md transition-colors flex items-center justify-center space-x-2 text-sm"
+        >
+          <HelpCircle className="w-4 h-4" />
+          <span>Get Help</span>
+        </button>
+      )}
+
       {/* Footer */}
-      <div className="text-xs text-gray-400">
-        <p>Terms And Conditions</p>
-        <p>Privacy Policy</p>
-        <p>Accessibility</p>
-        <p>Contact Us</p>
-        <p className="mt-4">© 2025, Works Limited. All rights reserved.</p>
+      <div className="text-xs text-gray-500 space-y-1 pt-4 border-t border-slate-700">
+        <p className="hover:text-gray-300 cursor-pointer">Terms & Conditions</p>
+        <p className="hover:text-gray-300 cursor-pointer">Privacy Policy</p>
+        <p className="mt-2">© 2025 Resume Builder</p>
       </div>
     </aside>
   );

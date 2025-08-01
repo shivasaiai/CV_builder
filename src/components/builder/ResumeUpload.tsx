@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback } from 'react';
 import { Upload, FileText, X, CheckCircle, AlertCircle } from 'lucide-react';
 import { EnhancedResumeParser, ParsedResumeData } from './services/EnhancedResumeParser';
+import { MultiStrategyParser } from './services/parsing/MultiStrategyParser';
 import { ResumeData } from './types';
 
 interface ResumeUploadProps {
@@ -74,13 +75,21 @@ const ResumeUpload = ({ onResumeUploaded, onClose, isOpen }: ResumeUploadProps) 
         throw new Error(`File type ${fileExtension} is not supported. Please upload a PDF, DOCX, DOC, TXT, RTF, or image file.`);
       }
 
-      console.log('Starting file parsing:', {
+      console.log('Starting enhanced file parsing:', {
         name: file.name,
         size: `${(file.size / 1024).toFixed(1)} KB`,
         type: file.type
       });
 
-      const parsedData = await EnhancedResumeParser.parseFile(file, (progress, total, status) => {
+      // Use the new multi-strategy parser for better error handling
+      const multiParser = new MultiStrategyParser({
+        enableOCRFallback: true,
+        enableDiagnostics: true,
+        maxRetries: 3,
+        timeoutMs: 120000 // 2 minutes
+      });
+
+      const parseResult = await multiParser.parseFile(file, (progress, total, status) => {
         console.log('Parsing progress:', { progress, total, status });
         updateState({ 
           ocrProgress: progress, 
@@ -88,6 +97,16 @@ const ResumeUpload = ({ onResumeUploaded, onClose, isOpen }: ResumeUploadProps) 
           ocrActive: status.toLowerCase().includes('ocr') 
         });
       });
+
+      if (!parseResult.success) {
+        // Handle parsing failure with detailed error information
+        const primaryError = parseResult.errors[0];
+        const errorMessage = this.formatDetailedErrorMessage(primaryError, parseResult);
+        throw new Error(errorMessage);
+      }
+
+      // Convert the parse result to the expected format using the existing parser
+      const parsedData = EnhancedResumeParser.parseTextContent(parseResult.content);
 
       console.log('Parsing completed successfully:', parsedData);
 
@@ -103,20 +122,8 @@ const ResumeUpload = ({ onResumeUploaded, onClose, isOpen }: ResumeUploadProps) 
       let errorMessage = 'Failed to parse resume';
       
       if (error instanceof Error) {
+        // The error message is already formatted by formatDetailedErrorMessage
         errorMessage = error.message;
-        
-        // Provide more user-friendly error messages
-        if (error.message.includes('PDF')) {
-          errorMessage = 'Could not process PDF file. Please ensure it\'s not password-protected and contains readable text.';
-        } else if (error.message.includes('DOCX') || error.message.includes('mammoth')) {
-          errorMessage = 'Could not process Word document. Please try saving it in a newer format or convert to PDF.';
-        } else if (error.message.includes('OCR') || error.message.includes('tesseract')) {
-          errorMessage = 'Could not extract text from image-based content. Please ensure the image quality is good and text is clearly visible.';
-        } else if (error.message.includes('timeout')) {
-          errorMessage = 'Processing took too long. Please try with a smaller file or simpler format.';
-        } else if (error.message.includes('network') || error.message.includes('fetch')) {
-          errorMessage = 'Network error occurred. Please check your connection and try again.';
-        }
       }
 
       updateState({ 
@@ -169,6 +176,36 @@ const ResumeUpload = ({ onResumeUploaded, onClose, isOpen }: ResumeUploadProps) 
     } else {
       console.log('No parsed data available');
     }
+  };
+
+  const formatDetailedErrorMessage = (error: any, parseResult: any): string => {
+    if (!error) return 'Unknown parsing error occurred.';
+
+    // Create detailed error message based on error type
+    let message = error.userMessage || error.message || 'Unknown error occurred.';
+    
+    // Add diagnostic information if available
+    if (error.diagnosticInfo && error.diagnosticInfo.length > 0) {
+      message += `\n\nDiagnostic Info: ${error.diagnosticInfo}`;
+    }
+    
+    // Add suggested actions
+    if (error.suggestedActions && error.suggestedActions.length > 0) {
+      message += `\n\nSuggested Actions:\n• ${error.suggestedActions.join('\n• ')}`;
+    }
+    
+    // Add metadata if available
+    if (parseResult.metadata) {
+      const meta = parseResult.metadata;
+      message += `\n\nTechnical Details:`;
+      message += `\n• File size: ${(meta.fileSize / 1024).toFixed(1)} KB`;
+      message += `\n• Processing time: ${meta.processingTime?.toFixed(0)}ms`;
+      if (meta.strategiesTried) {
+        message += `\n• Strategies tried: ${meta.strategiesTried.join(', ')}`;
+      }
+    }
+    
+    return message;
   };
 
   const handleReset = () => {

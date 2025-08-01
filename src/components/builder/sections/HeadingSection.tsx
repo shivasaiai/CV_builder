@@ -37,12 +37,25 @@ const HeadingSection = ({
 
   return (
     <div className="max-w-4xl w-full mx-auto">
-      <div className="mb-8 text-center">
-        <h1 className="text-4xl font-bold mb-2 text-gray-900">
-          Let's start with your contact information
+      {/* Go Back Link */}
+      <div className="mb-6">
+        <button
+          onClick={onBack}
+          className="flex items-center text-blue-600 hover:text-blue-700 transition-colors"
+        >
+          <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+          Go Back
+        </button>
+      </div>
+
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold mb-3 text-gray-900">
+          What's the best way for employers to contact you?
         </h1>
-        <p className="text-xl text-gray-500">
-          Add your professional contact details so employers can reach you easily.
+        <p className="text-lg text-gray-600">
+          We suggest including an email and phone number.
         </p>
       </div>
 

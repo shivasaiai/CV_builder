@@ -1,7 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { ColorPicker } from "@/components/ui/color-picker";
-import { Download, Palette } from "lucide-react";
-import { useState } from "react";
+import { Download } from "lucide-react";
 import CleanChromatic from '@/components/resume-templates/CleanChromatic';
 import ContemporaryContrast from '@/components/resume-templates/ContemporaryContrast';
 import TranquilChroma from '@/components/resume-templates/TranquilChroma';
@@ -54,49 +52,35 @@ const templates = [
 
 
 const TemplatesPage = () => {
-    const [selectedColors, setSelectedColors] = useState<{[key: number]: string}>({});
-    
-    const availableColors = [
-        { color: '#1e40af', name: 'Professional Blue' },
-        { color: '#059669', name: 'Corporate Green' },
-        { color: '#7c3aed', name: 'Executive Purple' },
-        { color: '#dc2626', name: 'Bold Red' },
-        { color: '#ea580c', name: 'Creative Orange' },
-        { color: '#1f2937', name: 'Classic Charcoal' },
-        { color: '#0891b2', name: 'Modern Teal' },
-        { color: '#be123c', name: 'Elegant Rose' },
-        { color: '#4338ca', name: 'Deep Indigo' },
-        { color: '#16a34a', name: 'Fresh Emerald' },
-        { color: '#7c2d12', name: 'Warm Brown' },
-        { color: '#581c87', name: 'Royal Purple' },
-        { color: '#0f172a', name: 'Midnight Black' },
-        { color: '#374151', name: 'Slate Gray' },
-        { color: '#0d9488', name: 'Professional Teal' },
-    ];
-
-    const handleColorChange = (templateId: number, color: string) => {
-        setSelectedColors(prev => ({
-            ...prev,
-            [templateId]: color
-        }));
-    };
 
     const handleUseTemplate = (templateName: string, templateId: number) => {
         const sessionId = generateSessionId();
         const encodedTemplateName = encodeURIComponent(templateName);
-        const selectedColor = selectedColors[templateId] || availableColors[0].color;
-        const encodedColor = encodeURIComponent(selectedColor);
-        window.location.href = `/builder-new/${sessionId}?template=${encodedTemplateName}&color=${encodedColor}`;
+        
+        // Get user type from URL params
+        const urlParams = new URLSearchParams(window.location.search);
+        const userType = urlParams.get('userType') || 'experienced';
+        
+        window.location.href = `/builder-new/${sessionId}?template=${encodedTemplateName}&userType=${userType}`;
     };
 
+    // Get user type from URL params for dynamic content
+    const urlParams = new URLSearchParams(window.location.search);
+    const userType = urlParams.get('userType');
+    
     return (
         <div className="min-h-screen bg-background py-20">
             <div className="container mx-auto px-4">
                 <h2 className="text-4xl font-bold text-center text-foreground mb-4 animate-fade-in">
-                    Choose Your Resume Template
+                    {userType === 'fresher' ? 'Fresh Graduate Templates' : userType === 'experienced' ? 'Professional Templates' : 'Choose Your Resume Template'}
                 </h2>
                 <p className="text-center text-muted-foreground mb-12 max-w-2xl mx-auto animate-fade-in">
-                    Select a template to start building your professional resume. You can change it later.
+                    {userType === 'fresher' 
+                        ? 'Select a template designed for new graduates and entry-level positions. Showcase your potential and skills effectively.'
+                        : userType === 'experienced'
+                        ? 'Choose from professional templates designed for experienced professionals. Highlight your achievements and career progression.'
+                        : 'Select a template to start building your professional resume. You can change it later.'
+                    }
                 </p>
                 {/* Template Categories */}
                 <div className="mb-12">
@@ -114,7 +98,7 @@ const TemplatesPage = () => {
                 </div>
 
                 {/* Templates Grid */}
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-12 mb-12 animate-fade-in">
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 mb-12 animate-fade-in">
                     {templates.map((template) => (
                         <div key={template.id} className="group transition-all duration-300 flex flex-col items-center">
                             <div className="relative">
@@ -130,21 +114,25 @@ const TemplatesPage = () => {
                                 </div>
                             </div>
                             <div
-                                className="relative h-[400px] w-full max-w-[280px] overflow-hidden rounded-lg shadow-lg border cursor-pointer hover:shadow-xl transition-all duration-300 group-hover:scale-105 hover:border-primary"
+                                className="relative h-[500px] w-full max-w-[320px] overflow-hidden rounded-xl shadow-lg border-2 border-gray-200 cursor-pointer hover:shadow-2xl transition-all duration-300 group-hover:scale-[1.02] hover:border-blue-400 bg-white"
                                 onClick={() => handleUseTemplate(template.name, template.id)}
                             >
-                                <div className="absolute top-0 left-1/2 -translate-x-1/2 transform scale-[0.32] origin-top w-[8.5in] h-[11in]">
+                                <div className="absolute top-0 left-1/2 -translate-x-1/2 transform scale-[0.38] origin-top w-[8.5in] h-[11in]">
                                     <template.Component 
                                         {...dummyData} 
                                         experience={dummyData.experience} 
                                         education={dummyData.education}
-                                        primaryColor={selectedColors[template.id] || availableColors[0].color}
+                                        primaryColor="#1e40af"
                                     />
                                 </div>
-                                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                                    <Button size="lg" className="gap-2 pointer-events-none bg-white text-gray-900 hover:bg-gray-100 hover:scale-105 transition-transform duration-300">
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-black/20 opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col items-center justify-center gap-3">
+                                    <div className="text-white text-center mb-2">
+                                        <h4 className="font-semibold text-lg mb-1">Preview {template.name}</h4>
+                                        <p className="text-sm text-gray-200">Click to select this template</p>
+                                    </div>
+                                    <Button size="lg" className="gap-2 pointer-events-none bg-blue-600 text-white hover:bg-blue-700 hover:scale-105 transition-all duration-200 shadow-lg">
                                         <Download className="w-4 h-4" />
-                                        Use Template
+                                        Use This Template
                                     </Button>
                                 </div>
                                 {/* ATS Badge */}
@@ -172,20 +160,7 @@ const TemplatesPage = () => {
                                 {template.id === 16 && "Rose-themed circular design with icon sections and elegant styling"}
                                 {template.id === 17 && "Violet geometric template with creative shapes and modern cards"}
                             </p>
-                            
-                            {/* Color Selection */}
-                            <div className="mt-4 p-4 bg-card rounded-lg border max-w-[280px] w-full">
-                                <div className="flex items-center gap-2 mb-3">
-                                    <Palette className="w-4 h-4 text-muted-foreground" />
-                                    <span className="text-sm font-medium text-foreground">Choose Color</span>
-                                </div>
-                                <ColorPicker
-                                    colors={availableColors}
-                                    selectedColor={selectedColors[template.id] || availableColors[0]}
-                                    onColorChange={(color) => handleColorChange(template.id, color)}
-                                    className="justify-center"
-                                />
-                            </div>
+
                         </div>
                     ))}
                 </div>
