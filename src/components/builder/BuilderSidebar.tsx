@@ -32,9 +32,9 @@ const BuilderSidebar = ({
 }: BuilderSidebarProps) => {
   
   return (
-    <aside className="h-full bg-slate-900 text-white flex flex-col p-6">
+    <aside className="h-full bg-slate-900 text-white flex flex-col p-4">
       {/* Logo */}
-      <div className="flex items-center mb-8 p-4">
+      <div className="flex items-center mb-6 p-2">
         <div className="flex items-center">
           <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center mr-3">
             <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
@@ -57,14 +57,14 @@ const BuilderSidebar = ({
       )}
 
       {/* Section Navigation with Progress Line */}
-      <nav className="py-4">
+      <nav className="py-2">
         <div className="relative">
           {/* Progress Line */}
           <div className="absolute left-4 top-6 bottom-6 w-0.5 bg-gray-600"></div>
           {/* Active Progress Line */}
           <div 
             className="absolute left-4 top-6 w-0.5 bg-blue-500 transition-all duration-500"
-            style={{ height: `${(activeIndex + 1) * 60 - 12}px` }}
+            style={{ height: `${(activeIndex + 1) * 50 - 12}px` }}
           ></div>
           
           {SECTIONS.map((section, idx) => {
@@ -72,7 +72,7 @@ const BuilderSidebar = ({
             const isActive = idx === activeIndex;
 
             return (
-              <div key={section} className="relative flex items-center mb-6">
+              <div key={section} className="relative flex items-center mb-4">
                 {/* Step Circle */}
                 <button
                   onClick={() => onSectionClick(idx)}

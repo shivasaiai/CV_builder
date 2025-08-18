@@ -101,7 +101,7 @@ const ResumeUpload = ({ onResumeUploaded, onClose, isOpen }: ResumeUploadProps) 
       if (!parseResult.success) {
         // Handle parsing failure with detailed error information
         const primaryError = parseResult.errors[0];
-        const errorMessage = this.formatDetailedErrorMessage(primaryError, parseResult);
+        const errorMessage = formatDetailedErrorMessage(primaryError, parseResult);
         throw new Error(errorMessage);
       }
 
@@ -124,6 +124,10 @@ const ResumeUpload = ({ onResumeUploaded, onClose, isOpen }: ResumeUploadProps) 
       if (error instanceof Error) {
         // The error message is already formatted by formatDetailedErrorMessage
         errorMessage = error.message;
+      } else if (typeof error === 'string') {
+        errorMessage = error;
+      } else if (error && typeof error === 'object' && 'message' in error) {
+        errorMessage = String(error.message);
       }
 
       updateState({ 
@@ -185,22 +189,26 @@ const ResumeUpload = ({ onResumeUploaded, onClose, isOpen }: ResumeUploadProps) 
     let message = error.userMessage || error.message || 'Unknown error occurred.';
     
     // Add diagnostic information if available
-    if (error.diagnosticInfo && error.diagnosticInfo.length > 0) {
+    if (error.diagnosticInfo && typeof error.diagnosticInfo === 'string' && error.diagnosticInfo.length > 0) {
       message += `\n\nDiagnostic Info: ${error.diagnosticInfo}`;
     }
     
     // Add suggested actions
-    if (error.suggestedActions && error.suggestedActions.length > 0) {
+    if (error.suggestedActions && Array.isArray(error.suggestedActions) && error.suggestedActions.length > 0) {
       message += `\n\nSuggested Actions:\n• ${error.suggestedActions.join('\n• ')}`;
     }
     
     // Add metadata if available
-    if (parseResult.metadata) {
+    if (parseResult && parseResult.metadata) {
       const meta = parseResult.metadata;
       message += `\n\nTechnical Details:`;
-      message += `\n• File size: ${(meta.fileSize / 1024).toFixed(1)} KB`;
-      message += `\n• Processing time: ${meta.processingTime?.toFixed(0)}ms`;
-      if (meta.strategiesTried) {
+      if (meta.fileSize) {
+        message += `\n• File size: ${(meta.fileSize / 1024).toFixed(1)} KB`;
+      }
+      if (meta.processingTime) {
+        message += `\n• Processing time: ${meta.processingTime.toFixed(0)}ms`;
+      }
+      if (meta.strategiesTried && Array.isArray(meta.strategiesTried)) {
         message += `\n• Strategies tried: ${meta.strategiesTried.join(', ')}`;
       }
     }

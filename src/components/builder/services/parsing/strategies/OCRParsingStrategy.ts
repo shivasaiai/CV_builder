@@ -4,7 +4,13 @@
  */
 
 import Tesseract from 'tesseract.js';
+import * as pdfjsLib from 'pdfjs-dist';
 import { BaseParsingStrategy, ParseResult, ProgressCallback } from './BaseParsingStrategy';
+
+// Set up PDF.js worker
+if (typeof window !== 'undefined') {
+  pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.js';
+}
 
 export class OCRParsingStrategy extends BaseParsingStrategy {
   name = 'OCR Text Recognition';
@@ -42,54 +48,130 @@ export class OCRParsingStrategy extends BaseParsingStrategy {
     try {
       if (onProgress) onProgress(5, 100, 'Initializing OCR engine...');
 
+      // Handle PDF files differently - convert to images first
+      let filesToProcess: (File | Blob)[] = [];
+      if (file.type.includes('pdf') || file.name.toLowerCase().endsWith('.pdf')) {
+        console.log('📄 Converting PDF to images for OCR...');
+        if (onProgress) onProgress(10, 100, 'Converting PDF pages to images...');
+        
+        try {
+          filesToProcess = await this.convertPDFToImages(file, onProgress);
+          console.log(`🖼️ Converted PDF to ${filesToProcess.length} images`);
+        } catch (pdfError) {
+          console.error('❌ Failed to convert PDF to images:', pdfError);
+          return this.createFailureResult([
+            this.createError(
+              'ocr_failed',
+              'Failed to convert PDF to images for OCR',
+              'Could not convert the PDF file to images for OCR processing. The PDF may be corrupted or in an unsupported format.',
+              [
+                'Try using a different PDF file',
+                'Check if the PDF opens correctly in other applications',
+                'Convert the PDF to images manually and upload as image files',
+                'Use a text-based PDF instead'
+              ],
+              false,
+              `PDF conversion error: ${pdfError instanceof Error ? pdfError.message : String(pdfError)}`
+            )
+          ], {
+            fileSize: file.size,
+            fileType: file.type,
+            processingTime: performance.now() - startTime,
+            ocrUsed: true
+          });
+        }
+      } else {
+        // For image files, process directly
+        filesToProcess = [file];
+      }
+
+      if (filesToProcess.length === 0) {
+        return this.createFailureResult([
+          this.createError(
+            'ocr_failed',
+            'No images to process',
+            'No images were generated from the file for OCR processing.',
+            ['Try a different file format', 'Check if the file is corrupted'],
+            false
+          )
+        ], {
+          fileSize: file.size,
+          fileType: file.type,
+          processingTime: performance.now() - startTime,
+          ocrUsed: true
+        });
+      }
+
       // Try multiple OCR configurations for best results
       const ocrConfigurations = this.getOCRConfigurations(onProgress);
       
       let bestResult = { text: '', confidence: 0 };
       let lastError: Error | null = null;
       let configurationUsed = '';
+      let allExtractedText: string[] = [];
 
-      // Try each configuration until we get good results
-      for (let i = 0; i < ocrConfigurations.length; i++) {
-        const config = ocrConfigurations[i];
-        console.log(`🔧 Trying OCR configuration: ${config.name}`);
+      // Process each image/page
+      for (let pageIndex = 0; pageIndex < filesToProcess.length; pageIndex++) {
+        const currentFile = filesToProcess[pageIndex];
+        console.log(`🔍 Processing page ${pageIndex + 1}/${filesToProcess.length}`);
         
-        try {
-          if (onProgress) onProgress(10 + (i * 25), 100, `Trying ${config.name}...`);
-          
-          const { result: ocrResult, duration } = await this.measurePerformance(
-            () => Tesseract.recognize(file, 'eng', config.options),
-            `OCR with ${config.name}`
+        if (onProgress) {
+          onProgress(
+            15 + ((pageIndex / filesToProcess.length) * 70),
+            100,
+            `Processing page ${pageIndex + 1} of ${filesToProcess.length}...`
           );
-
-          const { text, confidence } = ocrResult.data;
-          
-          console.log(`📊 ${config.name} results:`, {
-            textLength: text.length,
-            confidence: confidence,
-            processingTime: `${duration.toFixed(0)}ms`,
-            preview: text.substring(0, 100) + '...'
-          });
-          
-          // Accept result if it's better than previous attempts
-          if (text.length > bestResult.text.length || 
-              (text.length > 100 && confidence > bestResult.confidence)) {
-            bestResult = { text, confidence };
-            configurationUsed = config.name;
-            console.log(`✅ ${config.name} produced better results`);
-            
-            // If we got excellent results, don't try other configs
-            if (text.length > 500 && confidence > 80) {
-              console.log('🎯 Excellent OCR results, stopping here');
-              break;
-            }
-          }
-          
-        } catch (configError) {
-          console.warn(`❌ ${config.name} failed:`, configError);
-          lastError = configError instanceof Error ? configError : new Error(String(configError));
-          continue;
         }
+
+        // Try each configuration for this page
+        for (let i = 0; i < ocrConfigurations.length; i++) {
+          const config = ocrConfigurations[i];
+          
+          try {
+            const { result: ocrResult, duration } = await this.measurePerformance(
+              () => Tesseract.recognize(currentFile, 'eng', config.options),
+              `OCR page ${pageIndex + 1} with ${config.name}`
+            );
+
+            const { text, confidence } = ocrResult.data;
+            
+            console.log(`📊 Page ${pageIndex + 1} ${config.name} results:`, {
+              textLength: text.length,
+              confidence: confidence,
+              processingTime: `${duration.toFixed(0)}ms`
+            });
+            
+            // Store the page text
+            if (text.length > 50) { // Only use if we got meaningful text
+              allExtractedText[pageIndex] = text;
+              
+              // Update best result if this is better
+              if (text.length > bestResult.text.length || 
+                  (text.length > 100 && confidence > bestResult.confidence)) {
+                bestResult = { text, confidence };
+                configurationUsed = config.name;
+              }
+              
+              // If we got good results for this page, don't try other configs
+              if (text.length > 200 && confidence > 70) {
+                break;
+              }
+            }
+            
+          } catch (configError) {
+            console.warn(`❌ Page ${pageIndex + 1} ${config.name} failed:`, configError);
+            lastError = configError instanceof Error ? configError : new Error(String(configError));
+            continue;
+          }
+        }
+      }
+
+      // Combine all extracted text from all pages
+      const combinedText = allExtractedText.filter(text => text && text.length > 0).join('\n\n');
+      
+      if (combinedText.length > bestResult.text.length) {
+        bestResult.text = combinedText;
+        bestResult.confidence = Math.min(bestResult.confidence + 10, 100); // Boost confidence for multi-page success
       }
       
       if (onProgress) onProgress(90, 100, 'Finalizing OCR results...');
@@ -236,8 +318,8 @@ export class OCRParsingStrategy extends BaseParsingStrategy {
     let userMessage = '';
     let suggestedActions: string[] = [];
 
-    // Basic length checks
-    if (text.length < 30) {
+    // Basic length checks - be more permissive for challenging documents
+    if (text.length < 20) {
       adjustedConfidence = 0;
       isAcceptable = false;
       userMessage = 'OCR failed to extract sufficient text from the image. The image quality may be too poor or the text too small.';
@@ -247,16 +329,20 @@ export class OCRParsingStrategy extends BaseParsingStrategy {
         'Try a different file format',
         'Manually enter the information'
       ];
-    } else if (text.length < 100) {
-      adjustedConfidence = Math.min(adjustedConfidence, 30);
-      isAcceptable = false;
-      userMessage = 'OCR extracted very little text. Consider using a higher quality image or different format.';
+    } else if (text.length < 50) {
+      // Allow minimal text but with low confidence
+      adjustedConfidence = Math.min(adjustedConfidence, 40);
+      isAcceptable = true; // Still try to process it
+      userMessage = 'OCR extracted minimal text. Results may be incomplete.';
       suggestedActions = [
         'Use a higher resolution image',
         'Ensure good contrast between text and background',
         'Try a text-based PDF instead',
         'Check image quality'
       ];
+    } else if (text.length < 100) {
+      adjustedConfidence = Math.min(adjustedConfidence, 60);
+      isAcceptable = true;
     }
 
     // Confidence checks
@@ -473,5 +559,88 @@ export class OCRParsingStrategy extends BaseParsingStrategy {
       true,
       `Original error: ${errorMessage}`
     );
+  }
+
+  /**
+   * Convert PDF pages to images for OCR processing
+   */
+  private async convertPDFToImages(file: File, onProgress?: ProgressCallback): Promise<Blob[]> {
+    console.log('🔄 Converting PDF to images for OCR...');
+    
+    try {
+      // Load the PDF
+      const arrayBuffer = await file.arrayBuffer();
+      const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
+      
+      console.log(`📖 PDF loaded: ${pdf.numPages} pages`);
+      
+      const images: Blob[] = [];
+      
+      // Convert each page to image
+      for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+        if (onProgress) {
+          onProgress(
+            10 + ((pageNum - 1) / pdf.numPages) * 30, // Takes 30% of progress
+            100,
+            `Converting page ${pageNum} of ${pdf.numPages} to image...`
+          );
+        }
+        
+        try {
+          const page = await pdf.getPage(pageNum);
+          
+          // Set up canvas for rendering
+          const scale = 2.0; // Higher scale for better OCR quality
+          const viewport = page.getViewport({ scale });
+          
+          const canvas = document.createElement('canvas');
+          const context = canvas.getContext('2d');
+          
+          if (!context) {
+            throw new Error('Could not get canvas context');
+          }
+          
+          canvas.height = viewport.height;
+          canvas.width = viewport.width;
+          
+          // Render page to canvas
+          const renderContext = {
+            canvasContext: context,
+            viewport: viewport
+          };
+          
+          await page.render(renderContext).promise;
+          
+          // Convert canvas to blob
+          const blob = await new Promise<Blob>((resolve, reject) => {
+            canvas.toBlob((blob) => {
+              if (blob) {
+                resolve(blob);
+              } else {
+                reject(new Error('Failed to convert canvas to blob'));
+              }
+            }, 'image/png', 0.9);
+          });
+          
+          images.push(blob);
+          console.log(`✅ Converted page ${pageNum} to image (${(blob.size / 1024).toFixed(1)} KB)`);
+          
+        } catch (pageError) {
+          console.warn(`❌ Failed to convert page ${pageNum}:`, pageError);
+          // Continue with other pages
+        }
+      }
+      
+      if (images.length === 0) {
+        throw new Error('No pages could be converted to images');
+      }
+      
+      console.log(`🎉 Successfully converted ${images.length}/${pdf.numPages} pages to images`);
+      return images;
+      
+    } catch (error) {
+      console.error('💥 PDF to image conversion failed:', error);
+      throw new Error(`Failed to convert PDF to images: ${error instanceof Error ? error.message : String(error)}`);
+    }
   }
 }

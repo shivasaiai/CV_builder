@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useRef } from "react";
+import React, { useState, useCallback, useEffect, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { FaPhone, FaEnvelope, FaLinkedin, FaMapMarkerAlt, FaGraduationCap, FaGlobe, FaCar, FaPiedPiper } from 'react-icons/fa';
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
@@ -6,6 +6,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Calendar as CalendarIcon } from 'lucide-react';
 import { format } from 'date-fns';
 import html2pdf from 'html2pdf.js';
+import SimpleTemplateModal from "@/components/builder/components/SimpleTemplateModal";
 import CleanChromatic from "@/components/resume-templates/CleanChromatic";
 import ContemporaryContrast from "@/components/resume-templates/ContemporaryContrast";
 import TranquilChroma from "@/components/resume-templates/TranquilChroma";
@@ -414,7 +415,42 @@ const BuilderPage = () => {
   const [degreeSearchQuery, setDegreeSearchQuery] = useState("");
   const [showDegreeDropdown, setShowDegreeDropdown] = useState(false);
   const [showTemplateSelector, setShowTemplateSelector] = useState(false);
+  const [showTemplateModal, setShowTemplateModal] = useState(false);
+  
+  // Debug template modal state
+  useEffect(() => {
+    console.log('Template modal state changed:', showTemplateModal);
+  }, [showTemplateModal]);
   const [showColorEditor, setShowColorEditor] = useState(false);
+  const [isTemplateChanging, setIsTemplateChanging] = useState(false);
+  const [renderKey, setRenderKey] = useState(0);
+  
+  // Handle template change with visual feedback
+  const handleTemplateChange = (templateName) => {
+    console.log(`🎨 Template Change: "${activeTemplate}" → "${templateName}"`);
+    console.log('Available templates:', Object.keys(templates));
+    
+    // Check if template exists
+    if (!templates[templateName]) {
+      console.error(`❌ Template "${templateName}" not found!`);
+      console.error('Available templates:', Object.keys(templates));
+      return;
+    }
+    
+    console.log(`✅ Template "${templateName}" found, switching...`);
+    setIsTemplateChanging(true);
+    setActiveTemplate(templateName);
+    
+    // Force re-render by updating render key
+    setRenderKey(prev => prev + 1);
+    
+    // Reset the changing state after a brief delay
+    setTimeout(() => {
+      setIsTemplateChanging(false);
+      console.log(`✅ Template change completed: ${templateName}`);
+    }, 300);
+  };
+  
   const [templateColors, setTemplateColors] = useState({
     primary: '#3B82F6', // Default blue
     secondary: '#6B7280', // Default gray
@@ -448,6 +484,13 @@ const BuilderPage = () => {
       }
     }
   }, []);
+
+  // Track template changes
+  useEffect(() => {
+    console.log(`📋 Active template updated: ${activeTemplate}`);
+    console.log('Current templates object:', templates);
+    console.log('Template exists:', !!templates[activeTemplate]);
+  }, [activeTemplate]);
 
   // Contact form state
   const [contact, setContact] = useState({
@@ -722,12 +765,41 @@ const BuilderPage = () => {
 
   // Render the currently active template
   const ResumePreview = () => {
+    console.log(`🎨 ResumePreview rendering with template: ${activeTemplate}`);
+    console.log(`🔄 Render timestamp: ${new Date().toLocaleTimeString()}`);
+    
     try {
       const TemplateComponent = templates[activeTemplate];
       if (!TemplateComponent) {
-        return <div className="p-4 text-center text-gray-500">Template not found</div>;
+        console.warn(`❌ Template "${activeTemplate}" not found. Available templates:`, Object.keys(templates));
+        return (
+          <div className="p-4 text-center text-gray-500">
+            <p>Template "{activeTemplate}" not found</p>
+            <p className="text-xs mt-2">Please select a different template</p>
+          </div>
+        );
       }
-      return <TemplateComponent
+      
+      console.log(`✅ Successfully rendering template: ${activeTemplate}`);
+      
+      return (
+        <div>
+          {/* Debug: Show current template name */}
+          <div style={{ 
+            position: 'absolute', 
+            top: '10px', 
+            right: '10px', 
+            background: 'rgba(59, 130, 246, 0.9)', 
+            color: 'white', 
+            padding: '4px 8px', 
+            borderRadius: '4px', 
+            fontSize: '10px',
+            zIndex: 1000,
+            fontWeight: 'bold'
+          }}>
+            {activeTemplate}
+          </div>
+          <TemplateComponent
         contact={contact}
         summary={summary}
         skills={skills}
@@ -743,10 +815,17 @@ const BuilderPage = () => {
         awards={awards}
         references={references}
         activeSections={activeSections}
-      />;
+      />
+        </div>
+      );
     } catch (error) {
-      console.error('Error rendering template:', error);
-      return <div className="p-4 text-center text-red-500">Error loading template</div>;
+      console.error('❌ Error rendering template:', error);
+      return (
+        <div className="p-4 text-center text-red-500">
+          <p>Error loading template</p>
+          <p className="text-xs mt-2">{error.message}</p>
+        </div>
+      );
     }
   };
 
@@ -1460,8 +1539,31 @@ const BuilderPage = () => {
 
   return (
     <div className="flex min-h-screen bg-[#F4F7F9]">
+      {/* Template Modal */}
+      <SimpleTemplateModal
+        isOpen={showTemplateModal}
+        onClose={() => setShowTemplateModal(false)}
+        currentTemplate={activeTemplate}
+        resumeData={{
+          contact,
+          workExperiences: workExperiences || [],
+          education: education ? [education] : [],
+          skills: skills || [],
+          projects: projects || [],
+          certifications: certifications || [],
+          languages: languages || [],
+          volunteerExperiences: volunteerExperiences || [],
+          publications: publications || [],
+          awards: awards || [],
+          references: references || [],
+          activeSections: activeSections || {}
+        }}
+        templateColors={templateColors}
+        onTemplateSelect={handleTemplateChange}
+      />
+
       {/* Sidebar */}
-      <aside className="w-1/4 bg-[#0F172A] text-white flex flex-col p-8">
+      <aside className="w-80 bg-[#0F172A] text-white flex flex-col p-6">
         <div className="flex items-center text-2xl font-bold mb-12">
           <FaPiedPiper className="mr-2" />
           <span>Pied Piper</span>
@@ -1488,18 +1590,18 @@ const BuilderPage = () => {
           <div className="relative">
             <select
               value={activeTemplate}
-              onChange={(e) => setActiveTemplate(e.target.value)}
+              onChange={(e) => handleTemplateChange(e.target.value)}
               className="w-full bg-gray-700 text-white p-2 rounded border border-gray-600 text-sm"
             >
               {Object.keys(templates).map((templateName) => (
                 <option key={templateName} value={templateName}>
-                  {templateName}
+                  {templateName} {templateName === activeTemplate ? '✓' : ''}
                 </option>
               ))}
             </select>
           </div>
           <div className="text-xs text-gray-400 mt-2">
-            Change template anytime
+            Current: <span className="text-blue-400 font-medium">{activeTemplate}</span>
           </div>
         </div>
 
@@ -1520,25 +1622,46 @@ const BuilderPage = () => {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 p-12 flex">
-        <div className="w-2/3 pr-8">
+      <main className="flex-1 p-8 flex">
+        <div className="flex-1 pr-6">
           <div className="mb-8">
             <button onClick={handleBack} className="text-blue-500">&larr; Go Back</button>
           </div>
           {renderSection()}
         </div>
         {/* Live Preview */}
-        <div className="w-1/3">
+        <div className="w-96">
           <div className="sticky top-12">
             <div className="bg-white p-4 rounded-lg shadow-md mb-4 text-center">
               <p className="text-sm">Our Resume Builder delivers results.<sup>1</sup></p>
               <p className="text-green-500 font-bold">&uarr; 42% Higher response rate from recruiters</p>
             </div>
+            
+            {/* Current Template Indicator */}
+            <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg mb-4 text-center">
+              <p className="text-xs text-blue-600 font-medium">Current Template</p>
+              <p className="text-sm font-bold text-blue-800">{activeTemplate}</p>
+              {isTemplateChanging && (
+                <p className="text-xs text-blue-500 mt-1">🔄 Switching...</p>
+              )}
+            </div>
+            
+
             <div
               ref={previewContainerRef}
-              className="bg-gray-200 p-4 rounded-lg shadow-inner flex justify-center items-center overflow-hidden"
+              className="bg-gray-200 p-4 rounded-lg shadow-inner flex justify-center items-center overflow-hidden relative"
               style={{ height: '550px' }}
             >
+              {/* Loading overlay when template is changing */}
+              {isTemplateChanging && (
+                <div className="absolute inset-0 bg-white bg-opacity-80 flex items-center justify-center z-10 rounded-lg">
+                  <div className="flex flex-col items-center">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mb-2"></div>
+                    <p className="text-sm text-gray-600">Switching template...</p>
+                  </div>
+                </div>
+              )}
+              
               <div
                 style={{
                   transform: `scale(${scale})`,
@@ -1546,29 +1669,43 @@ const BuilderPage = () => {
                 }}
               >
                 <div ref={previewContentRef} className="bg-white shadow-lg" style={{ width: '8.5in', minHeight: '11in' }}>
-                  <ResumePreview />
+                  <ResumePreview key={`${activeTemplate}-${renderKey}`} />
                 </div>
               </div>
             </div>
             {/* Template Controls */}
             <div className="mt-4 space-y-3">
+              {/* Template Header */}
+              <div className="text-center">
+                <h4 className="text-sm font-semibold text-gray-700 mb-2">Choose Template</h4>
+                <p className="text-xs text-gray-500">Current: {activeTemplate}</p>
+              </div>
+              
               {/* Template Switching Buttons */}
               <div className="flex flex-wrap gap-2 justify-center">
-                {Object.keys(templates).slice(0, 4).map((templateName) => (
+                {Object.keys(templates).slice(0, 5).map((templateName) => (
                   <button
                     key={templateName}
-                    onClick={() => setActiveTemplate(templateName)}
-                    className={`px-3 py-1 text-xs rounded-full transition-colors ${activeTemplate === templateName
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                    onClick={() => {
+                      console.log(`Template button clicked: ${templateName}`);
+                      handleTemplateChange(templateName);
+                    }}
+                    className={`px-3 py-2 text-xs rounded-lg transition-all duration-200 font-medium border-2 ${activeTemplate === templateName
+                      ? 'bg-blue-600 text-white border-blue-600 shadow-md'
+                      : 'bg-white text-gray-700 border-gray-200 hover:border-blue-300 hover:bg-blue-50'
                       }`}
+                    title={templateName}
                   >
                     {templateName.split(' ')[0]}
                   </button>
                 ))}
                 <button
-                  onClick={() => setShowTemplateSelector(!showTemplateSelector)}
-                  className="px-3 py-1 text-xs rounded-full bg-gray-200 text-gray-700 hover:bg-gray-300"
+                  onClick={() => {
+                    console.log('More templates button clicked');
+                    setShowTemplateSelector(!showTemplateSelector);
+                  }}
+                  className="px-3 py-2 text-xs rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 border-2 border-gray-200 font-medium transition-all duration-200"
+                  title="View all templates"
                 >
                   More...
                 </button>
@@ -1576,35 +1713,92 @@ const BuilderPage = () => {
 
               {/* Extended Template Selector */}
               {showTemplateSelector && (
-                <div className="bg-white border rounded-lg p-4 shadow-lg">
-                  <h3 className="font-semibold mb-3 text-center">Choose Template</h3>
-                  <div className="grid grid-cols-2 gap-2 max-h-40 overflow-y-auto">
+                <div className="bg-white border-2 border-gray-200 rounded-xl p-4 shadow-xl">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="font-semibold text-gray-800">All Templates</h3>
+                    <button
+                      onClick={() => setShowTemplateSelector(false)}
+                      className="text-gray-400 hover:text-gray-600 text-lg"
+                      title="Close"
+                    >
+                      ×
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto">
                     {Object.keys(templates).map((templateName) => (
                       <button
                         key={templateName}
                         onClick={() => {
-                          setActiveTemplate(templateName);
+                          console.log(`Extended template selected: ${templateName}`);
+                          handleTemplateChange(templateName);
                           setShowTemplateSelector(false);
                         }}
-                        className={`px-3 py-2 text-xs rounded text-left transition-colors ${activeTemplate === templateName
-                          ? 'bg-blue-600 text-white'
-                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        className={`px-3 py-2 text-xs rounded-lg text-left transition-all duration-200 border-2 ${activeTemplate === templateName
+                          ? 'bg-blue-600 text-white border-blue-600 shadow-md'
+                          : 'bg-gray-50 text-gray-700 border-gray-200 hover:border-blue-300 hover:bg-blue-50'
                           }`}
+                        title={templateName}
                       >
-                        {templateName}
+                        <div className="font-medium">{templateName}</div>
+                        {activeTemplate === templateName && (
+                          <div className="text-xs opacity-75">✓ Current</div>
+                        )}
                       </button>
                     ))}
+                  </div>
+                  <div className="mt-3 text-xs text-gray-500 text-center">
+                    {Object.keys(templates).length} templates available
                   </div>
                 </div>
               )}
 
-              {/* Color Customization */}
-              <div className="flex justify-center gap-2">
+              {/* Color Customization & Template Selection */}
+              <div className="flex justify-center gap-2 flex-wrap">
                 <button
                   onClick={() => setShowColorEditor(!showColorEditor)}
                   className="px-4 py-2 bg-purple-600 text-white rounded-lg text-sm hover:bg-purple-700 transition-colors"
                 >
-                  🎨 Edit Colors
+                  🎨 Colors
+                </button>
+                <button
+                  onClick={() => {
+                    console.log('🔘 Template button clicked');
+                    console.log('Current activeTemplate:', activeTemplate);
+                    console.log('Available templates:', Object.keys(templates));
+                    setShowTemplateModal(true);
+                  }}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition-colors"
+                >
+                  📄 Template
+                </button>
+                
+                {/* Direct Template Selector for Testing */}
+                <select
+                  value={activeTemplate}
+                  onChange={(e) => {
+                    console.log('🧪 Direct template change via dropdown:', e.target.value);
+                    handleTemplateChange(e.target.value);
+                  }}
+                  className="px-2 py-1 text-xs border rounded bg-white text-black"
+                  title="Direct template selector for testing"
+                >
+                  {Object.keys(templates).map((templateName) => (
+                    <option key={templateName} value={templateName}>
+                      {templateName}
+                    </option>
+                  ))}
+                </select>
+                
+                {/* Force Re-render Button */}
+                <button
+                  onClick={() => {
+                    console.log('🔄 Forcing complete re-render');
+                    setRenderKey(prev => prev + 1);
+                  }}
+                  className="px-2 py-1 bg-red-600 text-white rounded text-xs hover:bg-red-700 transition-colors"
+                  title="Force re-render"
+                >
+                  🔄
                 </button>
               </div>
 

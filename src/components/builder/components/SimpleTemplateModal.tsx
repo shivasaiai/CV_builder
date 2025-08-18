@@ -36,14 +36,22 @@ const SimpleTemplateModal: React.FC<SimpleTemplateModalProps> = ({
   const templateNames = Object.keys(AVAILABLE_TEMPLATES);
 
   const handleTemplateSelect = (templateName: string) => {
-    console.log('Template selected:', templateName);
+    console.log('🎯 SimpleTemplateModal: Template selected:', templateName);
+    console.log('🎯 SimpleTemplateModal: Current template:', currentTemplate);
+    console.log('🎯 SimpleTemplateModal: Calling onTemplateSelect...');
+    
     setSelectedTemplate(templateName);
+    
+    // Immediately update the template
     onTemplateSelect(templateName);
+    
+    console.log('🎯 SimpleTemplateModal: onTemplateSelect called');
     
     // Close after a brief delay to show selection
     setTimeout(() => {
+      console.log('🎯 SimpleTemplateModal: Closing modal');
       onClose();
-    }, 200);
+    }, 300);
   };
 
   const getTemplateComponent = (templateName: string) => {

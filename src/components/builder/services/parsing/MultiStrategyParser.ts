@@ -109,13 +109,13 @@ export class MultiStrategyParser {
           }
 
           // If we got a successful result but low confidence, continue trying other strategies
-          if (result.success && result.confidence >= 40) {
+          if (result.success && result.confidence >= 30) {
             console.log(`⚠️ ${strategy.name} succeeded but with low confidence (${result.confidence}%), trying other strategies...`);
             continue;
           }
 
           // If strategy failed but provided partial content, keep it as fallback
-          if (!result.success && result.content.length > 50) {
+          if (!result.success && result.content.length > 20) {
             console.log(`⚠️ ${strategy.name} failed but provided partial content (${result.content.length} chars)`);
             continue;
           }
@@ -210,13 +210,20 @@ export class MultiStrategyParser {
       );
     }
 
-    // No successful results, find the one with most content
-    const resultsWithContent = results.filter(r => r.content.length > 0);
+    // No successful results, find the one with most content (be more lenient)
+    const resultsWithContent = results.filter(r => r.content.length > 10);
     
     if (resultsWithContent.length > 0) {
-      return resultsWithContent.reduce((best, current) => 
-        current.content.length > best.content.length ? current : best
-      );
+      // Prefer results with more content, but also consider confidence
+      return resultsWithContent.reduce((best, current) => {
+        if (current.content.length > best.content.length * 1.2) {
+          return current; // Significantly more content
+        } else if (current.content.length > best.content.length * 0.8 && current.confidence > best.confidence) {
+          return current; // Similar content but higher confidence
+        } else {
+          return best;
+        }
+      });
     }
 
     return null;

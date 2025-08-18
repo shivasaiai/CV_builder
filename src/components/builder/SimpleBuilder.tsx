@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import BuilderSidebar from './BuilderSidebar';
 import SectionRenderer from './SectionRenderer';
@@ -91,17 +91,25 @@ const SimpleBuilder: React.FC<SimpleBuilderProps> = ({ sessionId }) => {
 
   // Template change handler with smooth transition
   const handleTemplateChange = useCallback((templateId: string) => {
-    console.log('Changing template to:', templateId);
+    console.log('🎯 SimpleBuilder: Changing template to:', templateId);
+    console.log('🎯 SimpleBuilder: Current builderState.activeTemplate:', builderState.activeTemplate);
     setIsTemplateChanging(true);
     
     // Immediately update the template
     setActiveTemplate(templateId);
+    console.log('🎯 SimpleBuilder: setActiveTemplate called');
     
     // Add a small delay for smooth transition effect
     setTimeout(() => {
       setIsTemplateChanging(false);
+      console.log('🎯 SimpleBuilder: Template change completed');
     }, 500);
-  }, [setActiveTemplate]);
+  }, [setActiveTemplate, builderState.activeTemplate]);
+
+  // Debug: Track when activeTemplate changes
+  useEffect(() => {
+    console.log('🔄 SimpleBuilder: builderState.activeTemplate changed to:', builderState.activeTemplate);
+  }, [builderState.activeTemplate]);
 
   const currentSection = SECTIONS[builderState.activeIndex];
 
@@ -132,7 +140,7 @@ const SimpleBuilder: React.FC<SimpleBuilderProps> = ({ sessionId }) => {
 
       <div className="flex min-h-screen">
         {/* Left Sidebar with Form */}
-        <div className="w-80 bg-slate-900 text-white flex-shrink-0 flex flex-col">
+        <div className="w-70 bg-slate-900 text-white flex-shrink-0 flex flex-col">
           <BuilderSidebar
             activeIndex={builderState.activeIndex}
             resumeCompleteness={resumeCompleteness}
@@ -160,8 +168,23 @@ const SimpleBuilder: React.FC<SimpleBuilderProps> = ({ sessionId }) => {
         </div>
 
         {/* Right Preview Area - Smaller */}
-        <div className="w-80 bg-gray-50 flex-shrink-0">
+        <div className="w-1/4 bg-gray-50 flex-shrink-0">
           <div className="h-full p-4 flex flex-col relative">
+
+            {/* Current Template Debug Info */}
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-4">
+              <div className="text-center">
+                <div className="text-xs font-medium text-yellow-800 mb-1">
+                  🔧 Debug: Current Template
+                </div>
+                <div className="text-sm font-bold text-yellow-900">
+                  {builderState.activeTemplate}
+                </div>
+                {isTemplateChanging && (
+                  <div className="text-xs text-yellow-600 mt-1">🔄 Switching...</div>
+                )}
+              </div>
+            </div>
 
             {/* Preview Statistics */}
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
@@ -191,6 +214,13 @@ const SimpleBuilder: React.FC<SimpleBuilderProps> = ({ sessionId }) => {
                     <p className="text-xs text-gray-500">See changes in real-time</p>
                     <p className="text-xs text-gray-400">Current: {builderState.activeTemplate}</p>
                   </div>
+                </div>
+                
+              </div>
+              
+              <div className="p-3 border-b bg-gray-50">
+                <div className="flex items-center justify-between">
+                  <div className="text-xs text-gray-500">Customize</div>
                   <div className="flex flex-col space-y-2">
                     {/* Color Picker Button */}
                     <div className="relative">
@@ -228,6 +258,18 @@ const SimpleBuilder: React.FC<SimpleBuilderProps> = ({ sessionId }) => {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
                       </svg>
                       <span>Template</span>
+                    </button>
+                    
+                    {/* Debug: Direct Template Test */}
+                    <button 
+                      onClick={() => {
+                        console.log('🧪 Direct test: Switching to Creative Flare');
+                        handleTemplateChange('Creative Flare');
+                      }}
+                      className="px-2 py-1 bg-green-600 text-white rounded text-xs hover:bg-green-700 transition-colors"
+                      title="Test direct template change"
+                    >
+                      🧪
                     </button>
                   </div>
                 </div>

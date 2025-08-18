@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { ResumeData, TemplateColors } from '../../types';
-import { useTemplateManager } from '../../hooks/useTemplateManager';
+import { AVAILABLE_TEMPLATES } from '../../hooks/useTemplateManager';
 import { useScaleManager } from '../../hooks/useScaleManager';
 
 interface TopPositionedPreviewProps {
@@ -23,7 +23,9 @@ const TopPositionedPreview: React.FC<TopPositionedPreviewProps> = ({
   const previewRef = useRef<HTMLDivElement>(null);
   const [isLoading, setIsLoading] = useState(false);
   
-  const { getTemplateComponent } = useTemplateManager(activeTemplate, onTemplateChange);
+  const getTemplateComponent = (templateName: string) => {
+    return AVAILABLE_TEMPLATES[templateName as keyof typeof AVAILABLE_TEMPLATES];
+  };
   
   const scaleManager = useScaleManager({
     initialScale: 0.4,
@@ -61,6 +63,10 @@ const TopPositionedPreview: React.FC<TopPositionedPreviewProps> = ({
   }, [scaleManager, activeTemplate]);
 
   const TemplateComponent = getTemplateComponent(activeTemplate);
+  
+  // Debug logging
+  console.log('🎨 TopPositionedPreview: activeTemplate =', activeTemplate);
+  console.log('🎨 TopPositionedPreview: TemplateComponent =', TemplateComponent?.name || 'Unknown');
 
   return (
     <div 

@@ -9,6 +9,7 @@ import TemplatesPage from "./pages/Templates";
 import BuilderPage from "./pages/Builder";
 import BuilderNew from "./pages/BuilderNew";
 import TestBuilder from "./pages/TestBuilder";
+import TemplateTestPage from "./pages/TemplateTest";
 
 const queryClient = new QueryClient();
 
@@ -24,6 +25,7 @@ const App = () => (
           <Route path="/builder/:sessionId" element={<BuilderPage />} />
           <Route path="/builder-new/:sessionId" element={<BuilderNew />} />
           <Route path="/test-builder" element={<TestBuilder />} />
+          <Route path="/template-test" element={<TemplateTestPage />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
