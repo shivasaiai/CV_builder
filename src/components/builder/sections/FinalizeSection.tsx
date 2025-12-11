@@ -13,6 +13,11 @@ const FinalizeSection = ({
     console.log('Download PDF clicked');
   };
 
+
+
+
+  
+
   return (
     <div className="max-w-2xl w-full flex flex-col items-center justify-center h-[80vh]">
       <h1 className="text-4xl font-bold mb-2 text-gray-900">
