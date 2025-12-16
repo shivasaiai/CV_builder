@@ -1,53 +1,29 @@
 import { Button } from "@/components/ui/button";
 import { Download } from "lucide-react";
-import CleanChromatic from '@/components/resume-templates/CleanChromatic';
-import ContemporaryContrast from '@/components/resume-templates/ContemporaryContrast';
-import TranquilChroma from '@/components/resume-templates/TranquilChroma';
-import CreativeFlare from '@/components/resume-templates/CreativeFlare';
-import ExecutiveProfessional from '@/components/resume-templates/ExecutiveProfessional';
-import MinimalModern from '@/components/resume-templates/MinimalModern';
-import ClassicTimeless from '@/components/resume-templates/ClassicTimeless';
-import TechFocused from '@/components/resume-templates/TechFocused';
-import CorporateElite from '@/components/resume-templates/CorporateElite';
-import ModernGrid from '@/components/resume-templates/ModernGrid';
-import CreativeEdge from '@/components/resume-templates/CreativeEdge';
-import ProfessionalClean from '@/components/resume-templates/ProfessionalClean';
-import IndustryStandard from '@/components/resume-templates/IndustryStandard';
-import ModernMinimal from '@/components/resume-templates/ModernMinimal';
-import Design7Template from '@/components/resume-templates/Design7Template';
-import Design8Template from '@/components/resume-templates/Design8Template';
-import Design9Template from '@/components/resume-templates/Design9Template';
+import TemplatePreviewMini from "@/components/resume-templates/TemplatePreviewMini";
 
 function generateSessionId() {
   return 'sess-' + Math.random().toString(36).substr(2, 9);
 }
 
-const dummyData = {
-    contact: { firstName: 'Ishaan', lastName: 'Agarwal', city: 'Noida', state: 'DL', phone: '911 999 3344', email: 'ishaan@agarwal.com' },
-    summary: 'Diligent and adaptable recent college graduate with a B.S in Financial Accounting seeking a junior accountant position. Offering a proven ability to manage and maintain financial records, prepare financial reports, and ensure compliance with accounting principles.',
-    skills: ['Teamwork', 'MS Office', 'Customer Service', 'Retail Operation', 'Full-Lifecycle Recruiting', 'Documentation and Reporting', 'Bookkeeping Expertise'],
-    experience: { jobTitle: 'Retail Sales Associate', employer: 'V-Mart', startMonth: 'Feb', startYear: '2017', endMonth: 'Mar', endYear: '2021', current: false, city: 'Delhi', state: 'India' },
-    education: { degree: 'B.S in Finacial Accounting', school: 'Oxford Software Institute & Oxford School of English, New Delhi', gradMonth: 'Jul', gradYear: '2016' }
-};
-
 const templates = [
-    { id: 1, name: 'Clean Chromatic', Component: CleanChromatic },
-    { id: 2, name: 'Contemporary Contrast', Component: ContemporaryContrast },
-    { id: 3, name: 'Tranquil Chroma', Component: TranquilChroma },
-    { id: 4, name: 'Creative Flare', Component: CreativeFlare },
-    { id: 5, name: 'Executive Professional', Component: ExecutiveProfessional },
-    { id: 6, name: 'Minimal Modern', Component: MinimalModern },
-    { id: 7, name: 'Classic Timeless', Component: ClassicTimeless },
-    { id: 8, name: 'Tech Focused', Component: TechFocused },
-    { id: 9, name: 'Corporate Elite', Component: CorporateElite },
-    { id: 10, name: 'Modern Grid', Component: ModernGrid },
-    { id: 11, name: 'Creative Edge', Component: CreativeEdge },
-    { id: 12, name: 'Professional Clean', Component: ProfessionalClean },
-    { id: 13, name: 'Industry Standard', Component: IndustryStandard },
-    { id: 14, name: 'Modern Minimal', Component: ModernMinimal },
-    { id: 15, name: 'Teal Professional', Component: Design7Template },
-    { id: 16, name: 'Rose Circular', Component: Design8Template },
-    { id: 17, name: 'Violet Geometric', Component: Design9Template },
+    { id: 1, name: 'Clean Chromatic' },
+    { id: 2, name: 'Contemporary Contrast' },
+    { id: 3, name: 'Tranquil Chroma' },
+    { id: 4, name: 'Creative Flare' },
+    { id: 5, name: 'Executive Professional' },
+    { id: 6, name: 'Minimal Modern' },
+    { id: 7, name: 'Classic Timeless' },
+    { id: 8, name: 'Tech Focused' },
+    { id: 9, name: 'Corporate Elite' },
+    { id: 10, name: 'Modern Grid' },
+    { id: 11, name: 'Creative Edge' },
+    { id: 12, name: 'Professional Clean' },
+    { id: 13, name: 'Industry Standard' },
+    { id: 14, name: 'Modern Minimal' },
+    { id: 15, name: 'Teal Professional' },
+    { id: 16, name: 'Rose Circular' },
+    { id: 17, name: 'Violet Geometric' },
 ];
 
 
@@ -101,36 +77,62 @@ const TemplatesPage = () => {
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 mb-12 animate-fade-in">
                     {templates.map((template) => (
                         <div key={template.id} className="group transition-all duration-300 flex flex-col items-center">
-                            <div className="relative">
-                                <h3 className="text-xl font-bold text-center text-foreground mb-4">{template.name}</h3>
+                            <div className="relative mb-3">
+                                <h3 className="text-xl font-bold text-center text-foreground mb-4">
+                                    {template.name}
+                                </h3>
                                 {/* Template Category Badge */}
                                 <div className="absolute -top-2 -right-4">
-                                    {template.id <= 4 && <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">Original</span>}
-                                    {template.id >= 5 && template.id <= 7 && <span className="bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded-full">Executive</span>}
-                                    {template.id >= 8 && template.id <= 10 && <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">Modern</span>}
-                                    {template.id >= 11 && template.id <= 14 && <span className="bg-orange-100 text-orange-800 text-xs px-2 py-1 rounded-full">Creative</span>}
-                                    {template.id >= 15 && template.id <= 17 && <span className="bg-red-100 text-red-800 text-xs px-2 py-1 rounded-full">Designer</span>}
-                                    {template.id >= 13 && template.id <= 14 && <span className="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded-full">Classic</span>}
+                                    {template.id <= 4 && (
+                                        <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
+                                            Original
+                                        </span>
+                                    )}
+                                    {template.id >= 5 && template.id <= 7 && (
+                                        <span className="bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded-full">
+                                            Executive
+                                        </span>
+                                    )}
+                                    {template.id >= 8 && template.id <= 10 && (
+                                        <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
+                                            Modern
+                                        </span>
+                                    )}
+                                    {template.id >= 11 && template.id <= 14 && (
+                                        <span className="bg-orange-100 text-orange-800 text-xs px-2 py-1 rounded-full">
+                                            Creative
+                                        </span>
+                                    )}
+                                    {template.id >= 15 && template.id <= 17 && (
+                                        <span className="bg-red-100 text-red-800 text-xs px-2 py-1 rounded-full">
+                                            Designer
+                                        </span>
+                                    )}
+                                    {template.id >= 13 && template.id <= 14 && (
+                                        <span className="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded-full">
+                                            Classic
+                                        </span>
+                                    )}
                                 </div>
                             </div>
                             <div
-                                className="relative h-[500px] w-full max-w-[320px] overflow-hidden rounded-xl shadow-lg border-2 border-gray-200 cursor-pointer hover:shadow-2xl transition-all duration-300 group-hover:scale-[1.02] hover:border-blue-400 bg-white"
+                                className="relative w-full max-w-[260px] cursor-pointer hover:shadow-2xl transition-all duration-300 group-hover:scale-[1.02]"
                                 onClick={() => handleUseTemplate(template.name, template.id)}
                             >
-                                <div className="absolute top-0 left-1/2 -translate-x-1/2 transform scale-[0.38] origin-top w-[8.5in] h-[11in]">
-                                    <template.Component 
-                                        {...dummyData} 
-                                        experience={dummyData.experience} 
-                                        education={dummyData.education}
-                                        primaryColor="#1e40af"
-                                    />
-                                </div>
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-black/20 opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col items-center justify-center gap-3">
+                                <TemplatePreviewMini title={template.name} />
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-black/20 opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col items-center justify-center gap-3 rounded-xl">
                                     <div className="text-white text-center mb-2">
-                                        <h4 className="font-semibold text-lg mb-1">Preview {template.name}</h4>
-                                        <p className="text-sm text-gray-200">Click to select this template</p>
+                                        <h4 className="font-semibold text-lg mb-1">
+                                            Use {template.name}
+                                        </h4>
+                                        <p className="text-sm text-gray-200">
+                                            Click to select this template
+                                        </p>
                                     </div>
-                                    <Button size="lg" className="gap-2 pointer-events-none bg-blue-600 text-white hover:bg-blue-700 hover:scale-105 transition-all duration-200 shadow-lg">
+                                    <Button
+                                        size="lg"
+                                        className="gap-2 pointer-events-none bg-blue-600 text-white hover:bg-blue-700 hover:scale-105 transition-all duration-200 shadow-lg"
+                                    >
                                         <Download className="w-4 h-4" />
                                         Use This Template
                                     </Button>

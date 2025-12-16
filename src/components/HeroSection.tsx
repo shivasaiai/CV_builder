@@ -22,6 +22,7 @@ const HeroSection = () => {
       navigate(`/templates?userType=${type}`);
     }, 1000);
   };
+  
 
   return (
     <>
