@@ -3,11 +3,13 @@ import { CheckCircle } from "lucide-react";
 import heroIllustration from "@/assets/hero-illustration.png";
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const HeroSection = () => {
   const [open, setOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedType, setSelectedType] = useState("");
+  const navigate = useNavigate();
 
   const handleSelect = async (type: "fresher" | "experienced") => {
     console.log("Selected user type:", type);
@@ -17,7 +19,7 @@ const HeroSection = () => {
     
     // Show loading animation for 1 second then go to templates
     setTimeout(() => {
-      window.location.href = `/templates?userType=${type}`;
+      navigate(`/templates?userType=${type}`);
     }, 1000);
   };
 
@@ -89,7 +91,7 @@ const HeroSection = () => {
                 variant="outline" 
                 size="lg" 
                 className="px-8 py-4 text-lg"
-                onClick={() => window.location.href = "/templates"}
+                onClick={() => navigate("/templates")}
               >
                 View Templates
               </Button>
