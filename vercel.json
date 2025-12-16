@@ -1,5 +1,4 @@
 {
-  "//": "Ensure all client-side React Router routes are served by index.html on Vercel",
   "rewrites": [
     {
       "source": "/(.*)",

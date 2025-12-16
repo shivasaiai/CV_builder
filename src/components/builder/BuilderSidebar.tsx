@@ -41,7 +41,7 @@ const BuilderSidebar = ({
               <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
             </svg>
           </div>
-          <span className="text-xl font-bold text-white">zety</span>
+          {/* App name removed per branding change */}
         </div>
       </div>
 
