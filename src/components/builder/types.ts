@@ -82,6 +82,7 @@ export interface BuilderState {
   activeIndex: number;
   activeTemplate: string;
   resumeCompleteness: number;
+  finalizeCompleted?: boolean;
   educationStep: number;
   experienceStep: number;
   currentWorkIndex: number;

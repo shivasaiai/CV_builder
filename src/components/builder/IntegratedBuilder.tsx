@@ -47,6 +47,8 @@ const IntegratedBuilder: React.FC<IntegratedBuilderProps> = ({ sessionId }) => {
   const [uncertainPlacements, setUncertainPlacements] = useState<any[]>([]);
 
   const effectiveSessionId = sessionId || urlSessionId;
+  const userType = searchParams.get('userType') || 'experienced';
+  const allowResumeUpload = userType !== 'fresher';
 
   // Layout Management
   const {
@@ -274,9 +276,10 @@ const IntegratedBuilder: React.FC<IntegratedBuilderProps> = ({ sessionId }) => {
         activeIndex={builderState.activeIndex}
         resumeCompleteness={resumeCompleteness}
         resumeData={resumeData}
+        finalizeCompleted={!!builderState.finalizeCompleted}
         onSectionClick={handleSectionClick}
         onThemeChange={updateTheme}
-        onUploadClick={handleUploadClick}
+        onUploadClick={allowResumeUpload ? handleUploadClick : undefined}
         errors={errors}
         showGuidance={showGuidance}
         onRequestGuidance={requestGuidance}
@@ -331,7 +334,7 @@ const IntegratedBuilder: React.FC<IntegratedBuilderProps> = ({ sessionId }) => {
           updateBuilderState={updateBuilderState}
           onNext={handleNext}
           onBack={handleBack}
-          onUploadClick={handleUploadClick}
+          onUploadClick={allowResumeUpload ? handleUploadClick : undefined}
           validationErrors={getValidationErrors(builderState.activeIndex)}
           sectionStatus={getSectionStatus(builderState.activeIndex)}
           onSectionComplete={() => markSectionComplete(builderState.activeIndex)}

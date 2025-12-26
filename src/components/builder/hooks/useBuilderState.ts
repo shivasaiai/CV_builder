@@ -6,6 +6,7 @@ const initialBuilderState: BuilderState = {
   activeIndex: 0,
   activeTemplate: "Clean Chromatic",
   resumeCompleteness: 0,
+  finalizeCompleted: false,
   educationStep: 1,
   experienceStep: 1,
   currentWorkIndex: 0,

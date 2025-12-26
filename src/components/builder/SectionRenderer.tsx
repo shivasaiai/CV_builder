@@ -60,19 +60,7 @@ const SectionRenderer = ({
         </div>
       )}
 
-      {/* Section Status Indicator */}
-      {sectionStatus && (
-        <div className="mb-4 flex items-center space-x-2">
-          <div className={`w-3 h-3 rounded-full ${
-            sectionStatus === 'completed' ? 'bg-green-500' :
-            sectionStatus === 'in_progress' ? 'bg-yellow-500' :
-            'bg-gray-300'
-          }`} />
-          <span className="text-sm text-gray-600 capitalize">
-            {sectionStatus.replace('_', ' ')}
-          </span>
-        </div>
-      )}
+      {/* Section Status Indicator removed (was showing: "not started" / "in progress" / "completed") */}
 
       {/* Upload Resume button only for non-Heading sections (Heading has its own) */}
       {onUploadClick && sectionName !== 'Heading' && (

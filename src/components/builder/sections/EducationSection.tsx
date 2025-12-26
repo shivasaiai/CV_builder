@@ -78,7 +78,7 @@ const EducationSection = ({
               <select
                 value={education.degree}
                 onChange={(e) => handleEducationChange('degree', e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg transition duration-200 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-200"
               >
                 <option value="">Select your degree</option>
                 {degreeOptions.map((degree) => (
@@ -101,7 +101,7 @@ const EducationSection = ({
               onChange={(e) => handleEducationChange('field', e.target.value)}
               placeholder="e.g. Computer Science"
               list="field-suggestions"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg transition duration-200 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-200"
             />
             <datalist id="field-suggestions">
               {fieldSuggestions.map((field) => (
@@ -120,7 +120,7 @@ const EducationSection = ({
               value={education.school}
               onChange={(e) => handleEducationChange('school', e.target.value)}
               placeholder="e.g. Stanford University"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg transition duration-200 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-200"
             />
           </div>
 
@@ -136,7 +136,7 @@ const EducationSection = ({
                 value={education.location}
                 onChange={(e) => handleEducationChange('location', e.target.value)}
                 placeholder="e.g. Stanford, CA"
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg transition duration-200 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-200"
               />
             </div>
           </div>
@@ -155,7 +155,7 @@ const EducationSection = ({
                 <select
                   value={education.gradMonth}
                   onChange={(e) => handleEducationChange('gradMonth', e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg transition duration-200 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-200"
                 >
                   <option value="">Select month</option>
                   {months.map((month, index) => (
@@ -172,7 +172,7 @@ const EducationSection = ({
               <select
                 value={education.gradYear}
                 onChange={(e) => handleEducationChange('gradYear', e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg transition duration-200 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-200"
               >
                 <option value="">Select year</option>
                 {years.map((year) => (

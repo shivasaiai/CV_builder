@@ -1,11 +1,11 @@
 import { Upload, HelpCircle } from 'lucide-react';
 import { SECTIONS, ResumeData } from './types';
-import { useState } from 'react';
 
 interface BuilderSidebarProps {
   activeIndex: number;
   resumeCompleteness: number;
   resumeData: ResumeData;
+  finalizeCompleted?: boolean;
   onSectionClick: (index: number) => void;
   onThemeChange: (theme: Partial<ResumeData['theme']>) => void;
   onUploadClick?: () => void;
@@ -21,6 +21,7 @@ const BuilderSidebar = ({
   activeIndex,
   resumeCompleteness,
   resumeData,
+  finalizeCompleted = false,
   onSectionClick,
   onThemeChange,
   onUploadClick,
@@ -30,6 +31,75 @@ const BuilderSidebar = ({
   onRequestGuidance,
   useProgressiveFlow = false
 }: BuilderSidebarProps) => {
+
+  const isSectionComplete = (idx: number): boolean => {
+    // Summary should never be "auto-completed" just because it's optional.
+    // Only mark it complete when there is actual summary text.
+    if (SECTIONS[idx] === 'Summary') {
+      const summaryText = (resumeData.contact.summary ?? resumeData.summary ?? '').trim();
+      const wordCount = summaryText.split(/\s+/).filter(Boolean).length;
+      return summaryText.length >= 50 || wordCount >= 10;
+    }
+
+    // Finalize is only complete after the user clicks "Finish & Download PDF".
+    if (SECTIONS[idx] === 'Finalize') {
+      return !!finalizeCompleted;
+    }
+
+    // If progressive flow supplies statuses, trust that first.
+    const provided = sections?.[idx];
+    if (provided && typeof provided === 'object' && 'status' in provided) {
+      return (provided as any).status === 'completed';
+    }
+
+    // Fallback to simple validation based on resumeData (mirrors useResumeData.validateSection()).
+    switch (SECTIONS[idx]) {
+      case 'Heading':
+        // Mirror the HeadingSection validation: require values + valid formats
+        // eslint-disable-next-line no-useless-escape
+        const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(resumeData.contact.email || '');
+        const phoneOk = /^[\+]?[1-9][\d]{0,15}$/.test((resumeData.contact.phone || '').replace(/[\s\-\(\)]/g, ''));
+        return !!(
+          resumeData.contact.firstName &&
+          resumeData.contact.lastName &&
+          resumeData.contact.email &&
+          emailOk &&
+          resumeData.contact.phone &&
+          phoneOk
+        );
+      case 'Experience':
+        return (
+          resumeData.workExperiences.length > 0 &&
+          resumeData.workExperiences.some(exp => exp.jobTitle && exp.employer && exp.startDate && (exp.current || !!exp.endDate))
+        );
+      case 'Education':
+        return !!(resumeData.education.school && resumeData.education.degree);
+      case 'Skills':
+        return resumeData.skills.length >= 3;
+      case 'Finalize':
+        return !!finalizeCompleted;
+      default:
+        return false;
+    }
+  };
+
+  // Sidebar progress bar should match the 6 builder sections (each ~16.7%):
+  // Heading, Experience, Education, Skills, Summary, Finalize
+  const computedCompleteness = (() => {
+    let completedCount = 0;
+    for (let i = 0; i < SECTIONS.length; i++) {
+      if (isSectionComplete(i)) completedCount++;
+    }
+    return Math.round((completedCount / SECTIONS.length) * 100);
+  })();
+
+  // Progress line should reflect completed sections (not the currently active section).
+  // We only count contiguous completion from the start to avoid "skipping ahead" visuals.
+  let completedThroughIndex = -1;
+  for (let i = 0; i < SECTIONS.length; i++) {
+    if (isSectionComplete(i)) completedThroughIndex = i;
+    else break;
+  }
   
   return (
     <aside className="h-full bg-slate-900 text-white flex flex-col p-4">
@@ -64,11 +134,11 @@ const BuilderSidebar = ({
           {/* Active Progress Line */}
           <div 
             className="absolute left-4 top-6 w-0.5 bg-blue-500 transition-all duration-500"
-            style={{ height: `${(activeIndex + 1) * 50 - 12}px` }}
+            style={{ height: `${Math.max(0, (completedThroughIndex + 1) * 50 - 12)}px` }}
           ></div>
           
           {SECTIONS.map((section, idx) => {
-            const isCompleted = idx < activeIndex;
+            const isCompleted = isSectionComplete(idx);
             const isActive = idx === activeIndex;
 
             return (
@@ -108,7 +178,7 @@ const BuilderSidebar = ({
                   {isActive && (
                     <div className="text-xs text-blue-200 mt-1">Current step</div>
                   )}
-                  {isCompleted && (
+                  {isCompleted && !isActive && (
                     <div className="text-xs text-green-400 mt-1">Completed</div>
                   )}
                 </button>
@@ -124,10 +194,10 @@ const BuilderSidebar = ({
         <div className="w-full bg-slate-700 rounded-full h-2 mb-2">
           <div 
             className="bg-teal-400 h-2 rounded-full transition-all duration-500" 
-            style={{ width: `${resumeCompleteness}%` }}
+            style={{ width: `${computedCompleteness}%` }}
           />
         </div>
-        <div className="text-right text-sm font-medium text-white">{resumeCompleteness}%</div>
+        <div className="text-right text-sm font-medium text-white">{computedCompleteness}%</div>
       </div>
 
       {/* Help Button */}

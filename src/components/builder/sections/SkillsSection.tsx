@@ -140,7 +140,7 @@ const SkillsSection = ({
             onChange={(e) => setSearchTerm(e.target.value)}
             onKeyPress={(e) => e.key === 'Enter' && addCustomSkill(searchTerm)}
             placeholder={`Search ${activeCategory.toLowerCase()} skills or add your own...`}
-            className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg transition duration-200 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-200"
           />
           {searchTerm && (
             <button

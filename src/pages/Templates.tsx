@@ -83,11 +83,6 @@ const TemplatesPage = () => {
                                 </h3>
                                 {/* Template Category Badge */}
                                 <div className="absolute -top-2 -right-4">
-                                    {template.id <= 4 && (
-                                        <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
-                                            Original
-                                        </span>
-                                    )}
                                     {template.id >= 5 && template.id <= 7 && (
                                         <span className="bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded-full">
                                             Executive

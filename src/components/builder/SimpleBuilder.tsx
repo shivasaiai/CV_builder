@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import BuilderSidebar from './BuilderSidebar';
 import SectionRenderer from './SectionRenderer';
 import ResumeUpload from './ResumeUpload';
@@ -18,9 +18,13 @@ interface SimpleBuilderProps {
 
 const SimpleBuilder: React.FC<SimpleBuilderProps> = ({ sessionId }) => {
   const { sessionId: urlSessionId } = useParams();
+  const [searchParams] = useSearchParams();
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [showTemplateGrid, setShowTemplateGrid] = useState(false);
   const [showColorPicker, setShowColorPicker] = useState(false);
+  const [showValidationErrors, setShowValidationErrors] = useState(false);
+  const userType = searchParams.get('userType') || 'experienced';
+  const allowResumeUpload = userType !== 'fresher';
   
   // Debug template grid state
   React.useEffect(() => {
@@ -68,14 +72,41 @@ const SimpleBuilder: React.FC<SimpleBuilderProps> = ({ sessionId }) => {
 
   // Navigation handlers
   const handleSectionClick = useCallback((index: number) => {
+    const currentIndex = builderState.activeIndex;
+
+    // Always allow navigating backwards or staying on same section
+    if (index <= currentIndex) {
+      setShowValidationErrors(false);
+      setActiveSection(index);
+      return;
+    }
+
+    // Enforce sequential flow: only allow moving forward by 1 when current section is valid
+    const canAdvanceFromCurrent = validateSection(currentIndex);
+    if (!canAdvanceFromCurrent || index !== currentIndex + 1) {
+      setShowValidationErrors(true);
+      return;
+    }
+
+    setShowValidationErrors(false);
     setActiveSection(index);
-  }, [setActiveSection]);
+  }, [builderState.activeIndex, setActiveSection, validateSection]);
 
   const handleNext = useCallback(() => {
+    const currentIndex = builderState.activeIndex;
+    const canAdvanceFromCurrent = validateSection(currentIndex);
+
+    if (!canAdvanceFromCurrent) {
+      setShowValidationErrors(true);
+      return;
+    }
+
+    setShowValidationErrors(false);
     goToNextSection();
-  }, [goToNextSection]);
+  }, [builderState.activeIndex, goToNextSection, validateSection]);
 
   const handleBack = useCallback(() => {
+    setShowValidationErrors(false);
     goToPreviousSection();
   }, [goToPreviousSection]);
 
@@ -145,9 +176,10 @@ const SimpleBuilder: React.FC<SimpleBuilderProps> = ({ sessionId }) => {
             activeIndex={builderState.activeIndex}
             resumeCompleteness={resumeCompleteness}
             resumeData={resumeData}
+            finalizeCompleted={!!builderState.finalizeCompleted}
             onSectionClick={handleSectionClick}
             onThemeChange={handleThemeChange}
-            onUploadClick={() => setShowUploadModal(true)}
+            onUploadClick={allowResumeUpload ? () => setShowUploadModal(true) : undefined}
           />
         </div>
 
@@ -162,7 +194,8 @@ const SimpleBuilder: React.FC<SimpleBuilderProps> = ({ sessionId }) => {
               updateBuilderState={updateBuilderState}
               onNext={handleNext}
               onBack={handleBack}
-              onUploadClick={() => setShowUploadModal(true)}
+              onUploadClick={allowResumeUpload ? () => setShowUploadModal(true) : undefined}
+              validationErrors={showValidationErrors ? getValidationErrors(builderState.activeIndex) : []}
             />
           </div>
         </div>
@@ -171,39 +204,9 @@ const SimpleBuilder: React.FC<SimpleBuilderProps> = ({ sessionId }) => {
         <div className="w-1/4 bg-gray-50 flex-shrink-0">
           <div className="h-full p-4 flex flex-col relative">
 
-            {/* Current Template Debug Info */}
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-4">
-              <div className="text-center">
-                <div className="text-xs font-medium text-yellow-800 mb-1">
-                  🔧 Debug: Current Template
-                </div>
-                <div className="text-sm font-bold text-yellow-900">
-                  {builderState.activeTemplate}
-                </div>
-                {isTemplateChanging && (
-                  <div className="text-xs text-yellow-600 mt-1">🔄 Switching...</div>
-                )}
-              </div>
-            </div>
+            {/* Current Template Debug Info removed */}
 
-            {/* Preview Statistics */}
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
-              <div className="text-right">
-                <div className="text-sm font-medium text-gray-800 mb-1">
-                  Our Resume Builder delivers results!
-                </div>
-                <div className="flex items-center justify-end mb-2">
-                  <svg className="w-4 h-4 text-green-600 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M3.293 9.707a1 1 0 010-1.414l6-6a1 1 0 011.414 0l6 6a1 1 0 01-1.414 1.414L10 4.414 4.707 9.707a1 1 0 01-1.414 0z" clipRule="evenodd" />
-                  </svg>
-                  <span className="text-lg font-bold text-green-600">30%</span>
-                  <span className="text-sm text-gray-600 ml-1">Higher chance of getting a job</span>
-                </div>
-                <div className="text-xs text-gray-500">
-                  The results are based on a study with over 1000 participants, among whom 287 used resume tools provided on our family sites.
-                </div>
-              </div>
-            </div>
+            {/* Preview Statistics removed */}
             
             {/* Preview Container */}
             <div className="bg-white rounded-lg shadow-sm flex-1">

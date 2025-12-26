@@ -68,6 +68,14 @@ const initialResumeData: ResumeData = {
 
 export const useResumeData = () => {
   const [resumeData, setResumeData] = useState<ResumeData>(initialResumeData);
+  
+  const isValidEmail = useCallback((email: string) => {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  }, []);
+
+  const isValidPhone = useCallback((phone: string) => {
+    return /^[\+]?[1-9][\d]{0,15}$/.test(phone.replace(/[\s\-\(\)]/g, ''));
+  }, []);
 
   const updateResumeData = useCallback((updates: Partial<ResumeData>) => {
     setResumeData(prev => ({ ...prev, ...updates }));
@@ -271,17 +279,38 @@ export const useResumeData = () => {
 
   // Calculate resume completeness
   const resumeCompleteness = useMemo(() => {
-    let completed = 0;
-    const { contact, workExperiences, education, skills, summary } = resumeData;
-    
-    if (contact.firstName && contact.lastName) completed++;
-    if (workExperiences.length > 0 && workExperiences[0].jobTitle && workExperiences[0].employer) completed++;
-    if (education.school && education.degree) completed++;
-    if (skills.length > 0) completed++;
-    if (summary) completed++;
-    
-    return Math.round((completed / 5) * 100);
-  }, [resumeData]);
+    // Keep this aligned with our gating/validation logic:
+    // - Heading requires: firstName, lastName, email, phone
+    // - Experience requires: at least one experience with jobTitle + employer
+    // - Education requires: school + degree
+    // - Skills requires: at least 3 skills
+    // Summary is optional and should not affect the completeness %.
+
+    let completedRequired = 0;
+    const { contact, workExperiences, education, skills } = resumeData;
+
+    const headingComplete = !!(
+      contact.firstName &&
+      contact.lastName &&
+      contact.email &&
+      isValidEmail(contact.email) &&
+      contact.phone &&
+      isValidPhone(contact.phone)
+    );
+    const experienceComplete =
+      workExperiences.length > 0 &&
+      workExperiences.some(exp => exp.jobTitle && exp.employer && exp.startDate && (exp.current || !!exp.endDate));
+    const educationComplete = !!(education.school && education.degree);
+    const skillsComplete = skills.length >= 3;
+
+    if (headingComplete) completedRequired++;
+    if (experienceComplete) completedRequired++;
+    if (educationComplete) completedRequired++;
+    if (skillsComplete) completedRequired++;
+
+    const totalRequired = 4;
+    return Math.round((completedRequired / totalRequired) * 100);
+  }, [resumeData, isValidEmail, isValidPhone]);
 
   // Section validation functions
   const validateSection = useCallback((sectionIndex: number): boolean => {
@@ -290,23 +319,37 @@ export const useResumeData = () => {
     
     switch (sectionName) {
       case 'heading':
-        return !!(resumeData.contact.firstName && resumeData.contact.lastName && 
-                 resumeData.contact.email && resumeData.contact.phone);
+        return !!(
+          resumeData.contact.firstName &&
+          resumeData.contact.lastName &&
+          resumeData.contact.email &&
+          isValidEmail(resumeData.contact.email) &&
+          resumeData.contact.phone &&
+          isValidPhone(resumeData.contact.phone)
+        );
       case 'experience':
         return resumeData.workExperiences.length > 0 && 
-               resumeData.workExperiences.some(exp => exp.jobTitle && exp.employer);
+               resumeData.workExperiences.some(exp => 
+                 exp.jobTitle && 
+                 exp.employer &&
+                 exp.startDate &&
+                 (exp.current || !!exp.endDate)
+               );
       case 'education':
         return !!(resumeData.education.school && resumeData.education.degree);
       case 'skills':
         return resumeData.skills.length >= 3;
       case 'summary':
-        return true; // Summary is optional
+        // Summary counts as a section for completion; consider complete when meaningful text exists.
+        const summaryText = (resumeData.contact.summary ?? resumeData.summary ?? '').trim();
+        const wordCount = summaryText.split(/\s+/).filter(Boolean).length;
+        return summaryText.length >= 50 || wordCount >= 10;
       case 'finalize':
         return validateSection(0) && validateSection(1) && validateSection(2) && validateSection(3);
       default:
         return true;
     }
-  }, [resumeData]);
+  }, [resumeData, isValidEmail, isValidPhone]);
 
   const getValidationErrors = useCallback((sectionIndex: number): string[] => {
     const sectionNames = ['heading', 'experience', 'education', 'skills', 'summary', 'finalize'];
@@ -318,13 +361,19 @@ export const useResumeData = () => {
         if (!resumeData.contact.firstName) errors.push('First name is required');
         if (!resumeData.contact.lastName) errors.push('Last name is required');
         if (!resumeData.contact.email) errors.push('Email is required');
+        if (resumeData.contact.email && !isValidEmail(resumeData.contact.email)) errors.push('Email is invalid');
         if (!resumeData.contact.phone) errors.push('Phone number is required');
+        if (resumeData.contact.phone && !isValidPhone(resumeData.contact.phone)) errors.push('Phone number is invalid');
         break;
       case 'experience':
         if (resumeData.workExperiences.length === 0) {
           errors.push('At least one work experience is required');
         } else if (!resumeData.workExperiences.some(exp => exp.jobTitle && exp.employer)) {
-          errors.push('Please complete at least one work experience');
+          errors.push('Job title and company are required');
+        } else if (!resumeData.workExperiences.some(exp => exp.startDate)) {
+          errors.push('Start date is required');
+        } else if (!resumeData.workExperiences.some(exp => exp.current || !!exp.endDate)) {
+          errors.push('End date is required (or mark “I currently work here”)');
         }
         break;
       case 'education':
@@ -334,16 +383,24 @@ export const useResumeData = () => {
       case 'skills':
         if (resumeData.skills.length < 3) errors.push('At least 3 skills are recommended');
         break;
+      case 'summary': {
+        const summaryText = (resumeData.contact.summary ?? resumeData.summary ?? '').trim();
+        const wordCount = summaryText.split(/\s+/).filter(Boolean).length;
+        if (summaryText.length === 0) errors.push('Summary is required');
+        else if (!(summaryText.length >= 50 || wordCount >= 10)) errors.push('Summary should be more detailed (try at least 50 characters)');
+        break;
+      }
       case 'finalize':
         if (!validateSection(0)) errors.push('Complete the heading section');
         if (!validateSection(1)) errors.push('Complete the experience section');
         if (!validateSection(2)) errors.push('Complete the education section');
         if (!validateSection(3)) errors.push('Complete the skills section');
+        if (!validateSection(4)) errors.push('Complete the summary section');
         break;
     }
     
     return errors;
-  }, [resumeData, validateSection]);
+  }, [resumeData, validateSection, isValidEmail, isValidPhone]);
 
   return {
     resumeData,

@@ -37,18 +37,7 @@ const HeadingSection = ({
 
   return (
     <div className="max-w-4xl w-full mx-auto">
-      {/* Go Back Link */}
-      <div className="mb-6">
-        <button
-          onClick={onBack}
-          className="flex items-center text-blue-600 hover:text-blue-700 transition-colors"
-        >
-          <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-          </svg>
-          Go Back
-        </button>
-      </div>
+      {/* Go Back Link removed */}
 
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-3 text-gray-900">
@@ -59,25 +48,7 @@ const HeadingSection = ({
         </p>
       </div>
 
-      {/* Upload Resume Option */}
-      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-6 mb-8">
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="text-lg font-semibold text-blue-900 mb-2">
-              📄 Have an existing resume?
-            </h3>
-            <p className="text-blue-700">
-              Upload your current resume to automatically fill all these fields
-            </p>
-          </div>
-          <button
-            onClick={onUploadClick}
-            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
-          >
-            Upload Resume
-          </button>
-        </div>
-      </div>
+      {/* Upload Resume Option removed */}
 
       {/* Contact Form */}
       <div className="bg-white rounded-lg shadow-sm border p-8 mb-6">
@@ -93,7 +64,7 @@ const HeadingSection = ({
               <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
               <input 
                 type="text"
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg transition duration-200 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-200" 
                 placeholder="John" 
                 value={contact.firstName} 
                 onChange={e => handleContactChange('firstName', e.target.value)} 
@@ -110,7 +81,7 @@ const HeadingSection = ({
               <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
               <input 
                 type="text"
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg transition duration-200 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-200" 
                 placeholder="Smith" 
                 value={contact.lastName} 
                 onChange={e => handleContactChange('lastName', e.target.value)} 
@@ -127,7 +98,7 @@ const HeadingSection = ({
               <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
               <input 
                 type="email"
-                className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                className={`w-full pl-10 pr-4 py-3 border rounded-lg transition duration-200 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-200 ${
                   contact.email && !isValidEmail(contact.email) 
                     ? 'border-red-300' 
                     : 'border-gray-300'
@@ -151,7 +122,7 @@ const HeadingSection = ({
               <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
               <input 
                 type="tel"
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg transition duration-200 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-200" 
                 placeholder="(555) 123-4567" 
                 value={contact.phone} 
                 onChange={e => handleContactChange('phone', e.target.value)} 
@@ -172,7 +143,7 @@ const HeadingSection = ({
                 <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                 <input 
                   type="text"
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg transition duration-200 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-200" 
                   placeholder="New York" 
                   value={contact.city} 
                   onChange={e => handleContactChange('city', e.target.value)} 
@@ -186,7 +157,7 @@ const HeadingSection = ({
               </label>
               <input 
                 type="text"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg transition duration-200 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-200" 
                 placeholder="NY" 
                 value={contact.state} 
                 onChange={e => handleContactChange('state', e.target.value)} 
@@ -199,7 +170,7 @@ const HeadingSection = ({
               </label>
               <input 
                 type="text"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg transition duration-200 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-200" 
                 placeholder="10001" 
                 value={contact.zip} 
                 onChange={e => handleContactChange('zip', e.target.value)} 
@@ -220,7 +191,7 @@ const HeadingSection = ({
                 <Linkedin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                 <input 
                   type="url"
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg transition duration-200 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-200" 
                   placeholder="https://linkedin.com/in/johnsmith" 
                   value={contact.linkedin || ''} 
                   onChange={e => handleContactChange('linkedin', e.target.value)} 
@@ -236,7 +207,7 @@ const HeadingSection = ({
                 <Globe className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                 <input 
                   type="url"
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg transition duration-200 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-200" 
                   placeholder="https://johnsmith.com" 
                   value={contact.website || ''} 
                   onChange={e => handleContactChange('website', e.target.value)} 

@@ -167,7 +167,7 @@ const ExperienceSection = ({
               value={currentExperience.jobTitle}
               onChange={(e) => handleExperienceChange('jobTitle', e.target.value)}
               placeholder="e.g. Marketing Manager"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg transition duration-200 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-200"
             />
           </div>
 
@@ -183,7 +183,7 @@ const ExperienceSection = ({
                 value={currentExperience.employer}
                 onChange={(e) => handleExperienceChange('employer', e.target.value)}
                 placeholder="e.g. Google"
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg transition duration-200 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-200"
               />
             </div>
           </div>
@@ -320,7 +320,12 @@ const ExperienceSection = ({
         
         <button 
           onClick={onNext}
-          disabled={!currentExperience.jobTitle || !currentExperience.employer}
+          disabled={
+            !currentExperience.jobTitle ||
+            !currentExperience.employer ||
+            !currentExperience.startDate ||
+            (!currentExperience.current && !currentExperience.endDate)
+          }
           className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors font-medium"
         >
           Continue to Education →

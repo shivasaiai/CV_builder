@@ -1,4 +1,5 @@
 import { SectionProps } from '../types';
+import html2pdf from 'html2pdf.js';
 
 const FinalizeSection = ({ 
   resumeData, 
@@ -9,14 +10,52 @@ const FinalizeSection = ({
   onBack 
 }: SectionProps) => {
   const handleDownloadPDF = () => {
-    // TODO: Implement PDF download functionality
     console.log('Download PDF clicked');
+
+    const element = document.getElementById('pdf-generator-content');
+    if (!element) {
+      console.error('❌ PDF generation element not found (id="pdf-generator-content")');
+      return;
+    }
+
+    const contentHeight = element.scrollHeight;
+    const contentWidth = element.scrollWidth;
+
+    if (!contentHeight || !contentWidth) {
+      console.error('❌ PDF content has zero size, aborting download');
+      return;
+    }
+
+    // Convert pixels to inches (assuming 96 DPI)
+    const heightInInches = contentHeight / 96;
+    const widthInInches = contentWidth / 96;
+
+    const opt = {
+      margin: 0,
+      filename: 'resume.pdf',
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: {
+        scale: 4,
+        useCORS: true,
+        allowTaint: true,
+        height: contentHeight,
+        width: contentWidth
+      },
+      jsPDF: {
+        unit: 'in',
+        format: [widthInInches, heightInInches],
+        orientation: 'portrait',
+        compress: true
+      }
+    };
+
+    // Mark finalize as completed once download is initiated successfully.
+    updateBuilderState({ finalizeCompleted: true });
+
+    // Trigger PDF generation from the hidden preview in EnhancedResumePreview
+    // @ts-ignore - html2pdf has no default TS types in this project
+    html2pdf().from(element).set(opt).save();
   };
-
-
-
-
-  
 
   return (
     <div className="max-w-2xl w-full flex flex-col items-center justify-center h-[80vh]">

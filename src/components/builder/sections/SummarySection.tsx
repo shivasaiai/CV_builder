@@ -146,7 +146,7 @@ const SummarySection = ({
           onChange={(e) => handleSummaryChange(e.target.value)}
           placeholder="Write a brief summary of your professional background, key skills, and career objectives..."
           rows={6}
-          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base leading-relaxed"
+          className="w-full px-4 py-3 border border-gray-300 rounded-lg transition duration-200 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-200 text-base leading-relaxed"
         />
         
         <div className="flex items-center justify-between mt-4 text-sm text-gray-500">
