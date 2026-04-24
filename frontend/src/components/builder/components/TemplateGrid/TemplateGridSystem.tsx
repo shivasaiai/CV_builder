@@ -70,9 +70,9 @@ export const TemplateGridSystem: React.FC<TemplateGridSystemProps> = ({
                   <div className="transform scale-[0.08] origin-top-left w-[200px] h-[250px]">
                     <TemplateComponent
                       contact={resumeData.contact}
-                      summary={resumeData.contact.summary || 'Professional summary...'}
+                      summary={resumeData.summary || 'Professional summary...'}
                       skills={resumeData.skills}
-                      experience={resumeData.workExperiences[0] || {}}
+                      experience={resumeData.workExperiences || []}
                       education={resumeData.education}
                       primaryColor="#334D6E"
                     />
@@ -127,16 +127,9 @@ export const TemplateGridSystem: React.FC<TemplateGridSystemProps> = ({
                 <div className="transform scale-[0.15] origin-top-left w-[567px] h-[735px] bg-white">
                   <TemplateComponent
                     contact={resumeData.contact}
-                    summary={resumeData.contact.summary || 'Professional with extensive experience in various fields...'}
+                    summary={resumeData.summary || 'Professional with extensive experience in various fields...'}
                     skills={resumeData.skills}
-                    experience={resumeData.workExperiences[0] || {
-                      jobTitle: 'Senior Professional',
-                      company: 'Company Name',
-                      location: 'Location',
-                      startDate: '2022-01',
-                      endDate: 'Present',
-                      responsibilities: ['Led development projects', 'Managed team']
-                    }}
+                    experience={resumeData.workExperiences || []}
                     education={resumeData.education}
                     primaryColor="#334D6E"
                     colors={{ primary: '#334D6E', secondary: '#6B7280', accent: '#3B82F6' }}

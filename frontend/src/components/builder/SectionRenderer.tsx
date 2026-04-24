@@ -41,7 +41,7 @@ const SectionRenderer = ({
     onSectionComplete
   };
 
-  // Get section name for comparison
+  // Get section name for section rendering
   const sectionName = typeof activeSection === 'string' ? activeSection : activeSection?.name || 'Unknown';
 
   return (
@@ -61,18 +61,6 @@ const SectionRenderer = ({
       )}
 
       {/* Section Status Indicator removed (was showing: "not started" / "in progress" / "completed") */}
-
-      {/* Upload Resume button only for non-Heading sections (Heading has its own) */}
-      {onUploadClick && sectionName !== 'Heading' && (
-        <div className="mb-6 flex justify-end">
-          <button
-            onClick={onUploadClick}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
-          >
-            Upload Resume
-          </button>
-        </div>
-      )}
 
       {/* Section content */}
       {(() => {

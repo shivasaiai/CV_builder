@@ -15,7 +15,7 @@ interface SimpleProgressFlowProps {
   activeTemplate: string;
   availableTemplates: string[];
   onTemplateChange: (template: string) => void;
-  onUploadClick: () => void;
+  onUploadClick?: () => void;
   errors?: any[];
   showGuidance?: boolean;
   onRequestGuidance?: () => void;
@@ -29,7 +29,6 @@ const SimpleProgressFlow: React.FC<SimpleProgressFlowProps> = ({
   activeTemplate,
   availableTemplates,
   onTemplateChange,
-  onUploadClick,
   errors = [],
   showGuidance = false,
   onRequestGuidance
@@ -47,14 +46,6 @@ const SimpleProgressFlow: React.FC<SimpleProgressFlowProps> = ({
         </div>
         <p className="text-sm text-gray-300 mt-2">{resumeCompleteness}% Complete</p>
       </div>
-
-      {/* Upload Button */}
-      <button
-        onClick={onUploadClick}
-        className="w-full mb-6 px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-      >
-        📄 Upload Resume
-      </button>
 
       {/* Template Selector */}
       <div className="mb-6">
