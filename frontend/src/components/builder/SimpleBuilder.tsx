@@ -10,12 +10,72 @@ import SimpleColorPicker from './components/SimpleColorPicker';
 import { useBuilderState } from './hooks/useBuilderState';
 import { useResumeData } from './hooks/useResumeData';
 import { useTemplateManager } from './hooks/useTemplateManager';
-import { ResumeData } from './types';
+import { ResumeData, WorkExperience } from './types';
 import { SECTIONS } from './types';
 
 interface SimpleBuilderProps {
     sessionId?: string;
 }
+
+// ---- Persistence helpers ------------------------------------------------
+const STORAGE_PREFIX = 'craftmycv:builder:';
+
+// Serialize resumeData → plain JSON. Date objects become ISO strings.
+const serializeResumeData = (data: ResumeData): string => JSON.stringify(data);
+
+// Deserialize JSON → resumeData. Convert known date fields back to Date.
+const deserializeResumeData = (raw: string): Partial<ResumeData> | null => {
+    try {
+        const obj = JSON.parse(raw);
+        // Re-hydrate workExperience dates
+        if (Array.isArray(obj.workExperiences)) {
+            obj.workExperiences = obj.workExperiences.map((exp: WorkExperience) => ({
+                ...exp,
+                startDate: exp.startDate ? new Date(exp.startDate as unknown as string) : null,
+                endDate: exp.endDate ? new Date(exp.endDate as unknown as string) : null,
+            }));
+        }
+        return obj as Partial<ResumeData>;
+    } catch {
+        return null;
+    }
+};
+
+interface PersistedState {
+    resumeData: ResumeData;
+    activeIndex: number;
+    activeTemplate: string;
+    templateColors: unknown;
+    finalizeCompleted: boolean;
+    savedAt: number;
+}
+
+const loadPersisted = (sessionId: string): PersistedState | null => {
+    try {
+        const raw = localStorage.getItem(STORAGE_PREFIX + sessionId);
+        if (!raw) return null;
+        const obj = JSON.parse(raw) as PersistedState;
+        if (obj.resumeData) {
+            const rehydrated = deserializeResumeData(JSON.stringify(obj.resumeData));
+            if (rehydrated) obj.resumeData = rehydrated as ResumeData;
+        }
+        return obj;
+    } catch {
+        return null;
+    }
+};
+
+const savePersisted = (sessionId: string, state: PersistedState) => {
+    try {
+        localStorage.setItem(
+            STORAGE_PREFIX + sessionId,
+            JSON.stringify({ ...state, resumeData: JSON.parse(serializeResumeData(state.resumeData)) })
+        );
+    } catch (e) {
+        // Storage full or unavailable — fail silently
+        console.warn('Failed to persist builder state', e);
+    }
+};
 
 const SimpleBuilder: React.FC<SimpleBuilderProps> = ({ sessionId }) => {
     const { sessionId: urlSessionId } = useParams();
@@ -60,6 +120,71 @@ const SimpleBuilder: React.FC<SimpleBuilderProps> = ({ sessionId }) => {
         builderState.activeTemplate,
         setActiveTemplate
     );
+
+    // ---- Persistence: load once, save on every change ----
+    const hasLoadedRef = useRef(false);
+    useEffect(() => {
+        if (hasLoadedRef.current) return;
+        hasLoadedRef.current = true;
+        const persisted = loadPersisted(effectiveSessionId);
+        if (persisted) {
+            if (persisted.resumeData) {
+                importResumeData(persisted.resumeData);
+            }
+            if (typeof persisted.activeIndex === 'number') {
+                setActiveSection(persisted.activeIndex);
+            }
+            if (persisted.activeTemplate) {
+                setActiveTemplate(persisted.activeTemplate);
+            }
+            if (persisted.templateColors) {
+                setTemplateColors(persisted.templateColors as never);
+            }
+            if (persisted.finalizeCompleted) {
+                updateBuilderState({ finalizeCompleted: true });
+            }
+        } else {
+            // No persisted data — apply URL param template if provided
+            const templateFromUrl = searchParams.get('template');
+            if (templateFromUrl) setActiveTemplate(templateFromUrl);
+        }
+    }, [effectiveSessionId, importResumeData, searchParams, setActiveSection, setActiveTemplate, setTemplateColors, updateBuilderState]);
+
+    // Debounced save on every state change
+    useEffect(() => {
+        if (!hasLoadedRef.current) return;
+        const t = setTimeout(() => {
+            savePersisted(effectiveSessionId, {
+                resumeData,
+                activeIndex: builderState.activeIndex,
+                activeTemplate: builderState.activeTemplate,
+                templateColors: builderState.templateColors,
+                finalizeCompleted: !!builderState.finalizeCompleted,
+                savedAt: Date.now(),
+            });
+        }, 350);
+        return () => clearTimeout(t);
+    }, [resumeData, builderState.activeIndex, builderState.activeTemplate, builderState.templateColors, builderState.finalizeCompleted, effectiveSessionId]);
+
+    // Warn before closing if there is unsaved data in-flight (e.g., during debounce)
+    useEffect(() => {
+        const handler = (e: BeforeUnloadEvent) => {
+            // Fire final save synchronously
+            savePersisted(effectiveSessionId, {
+                resumeData,
+                activeIndex: builderState.activeIndex,
+                activeTemplate: builderState.activeTemplate,
+                templateColors: builderState.templateColors,
+                finalizeCompleted: !!builderState.finalizeCompleted,
+                savedAt: Date.now(),
+            });
+            // Don't actually block unload by default; this line is only a safety net
+            // that some browsers use to show a confirmation. Leave unset.
+            return undefined;
+        };
+        window.addEventListener('beforeunload', handler);
+        return () => window.removeEventListener('beforeunload', handler);
+    }, [effectiveSessionId, resumeData, builderState]);
 
     // Auto-fit preview height to the available panel space
     useEffect(() => {
@@ -143,6 +268,15 @@ const SimpleBuilder: React.FC<SimpleBuilderProps> = ({ sessionId }) => {
     const stepNumber = builderState.activeIndex + 1;
     const totalSteps = SECTIONS.length;
 
+    // Saved indicator state
+    const [savedRecently, setSavedRecently] = useState(false);
+    useEffect(() => {
+        if (!hasLoadedRef.current) return;
+        setSavedRecently(true);
+        const t = setTimeout(() => setSavedRecently(false), 1200);
+        return () => clearTimeout(t);
+    }, [resumeData, builderState.activeIndex, builderState.activeTemplate]);
+
     // Close color picker when clicking outside
     useEffect(() => {
         if (!showColorPicker) return;
@@ -198,6 +332,18 @@ const SimpleBuilder: React.FC<SimpleBuilderProps> = ({ sessionId }) => {
                             {builderState.activeTemplate}
                             <ChevronDown className="w-3.5 h-3.5" />
                         </button>
+                    </div>
+                    {/* Saved indicator */}
+                    <div className="hidden md:flex items-center gap-1.5 ml-2">
+                        <span
+                            className={
+                                'w-1.5 h-1.5 rounded-full transition-colors ' +
+                                (savedRecently ? 'bg-blue-500 animate-pulse' : 'bg-green-500')
+                            }
+                        />
+                        <span className="text-xs text-gray-500">
+                            {savedRecently ? 'Saving…' : 'Saved'}
+                        </span>
                     </div>
                 </div>
 
@@ -262,7 +408,34 @@ const SimpleBuilder: React.FC<SimpleBuilderProps> = ({ sessionId }) => {
             </header>
 
             {/* Main 3-column layout */}
-            <div className="flex-1 flex overflow-hidden">
+            <div className="flex-1 flex overflow-hidden"
+                // Prevent accidental Enter-submit-behaviour when a form element
+                // anywhere in this subtree would otherwise reload the page.
+                onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                        const target = e.target as HTMLElement;
+                        // Allow Enter in textareas, contenteditable, and buttons.
+                        if (
+                            target.tagName === 'TEXTAREA' ||
+                            target.tagName === 'BUTTON' ||
+                            target.getAttribute('contenteditable') === 'true'
+                        ) {
+                            return;
+                        }
+                        // For single-line inputs, prevent the browser from
+                        // attempting to submit any enclosing form.
+                        if (target.tagName === 'INPUT') {
+                            const type = (target as HTMLInputElement).type;
+                            // Keep Enter useful for custom handlers (skills search etc.),
+                            // but block the implicit form submit that the browser
+                            // would otherwise trigger.
+                            if (type !== 'search') {
+                                e.preventDefault();
+                            }
+                        }
+                    }
+                }}
+            >
                 {/* Left sidebar */}
                 <aside className="w-64 bg-slate-900 text-white flex-shrink-0 overflow-y-auto">
                     <BuilderSidebar
