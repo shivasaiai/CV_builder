@@ -11,6 +11,15 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  server: {
+    host: true,
+    allowedHosts: [
+      'resume-builder-959.preview.emergentagent.com',
+      'resume-builder-959.cluster-8.preview.emergentcf.cloud',
+      '.preview.emergentagent.com',
+      '.preview.emergentcf.cloud'
+    ]
+  },
   test: {
     globals: true,
     environment: 'jsdom',

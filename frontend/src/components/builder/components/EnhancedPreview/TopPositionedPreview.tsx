@@ -28,29 +28,25 @@ const TopPositionedPreview: React.FC<TopPositionedPreviewProps> = ({
   };
   
   const scaleManager = useScaleManager({
-    initialScale: 0.4,
-    persistScale: true,
-    storageKey: `top-preview-scale-${activeTemplate}`,
+    initialScale: 0.5,
+    persistScale: false,
+    storageKey: `builder-preview-scale-v2-${activeTemplate}`,
     autoFit: true
   });
 
-  // Auto-fit when container size changes
+  // Auto-fit to container width on mount and resize
   useEffect(() => {
     const handleResize = () => {
       if (previewRef.current) {
         const container = previewRef.current;
         const containerRect = container.getBoundingClientRect();
         const contentWidth = 8.5 * 96; // 8.5 inches at 96 DPI
-        const contentHeight = 11 * 96; // 11 inches at 96 DPI
-        
-        scaleManager.autoFit(
-          containerRect.width - 32, // Account for padding
-          containerRect.height - 32,
-          contentWidth,
-          contentHeight
-        );
+        scaleManager.fitToWidth(containerRect.width, contentWidth);
       }
     };
+
+    // Initial fit (wait a tick so layout is settled)
+    const t = setTimeout(handleResize, 50);
 
     const resizeObserver = new ResizeObserver(handleResize);
     if (previewRef.current) {
@@ -58,15 +54,13 @@ const TopPositionedPreview: React.FC<TopPositionedPreviewProps> = ({
     }
 
     return () => {
+      clearTimeout(t);
       resizeObserver.disconnect();
     };
-  }, [scaleManager, activeTemplate]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTemplate]);
 
   const TemplateComponent = getTemplateComponent(activeTemplate);
-  
-  // Debug logging
-  console.log('🎨 TopPositionedPreview: activeTemplate =', activeTemplate);
-  console.log('🎨 TopPositionedPreview: TemplateComponent =', TemplateComponent?.name || 'Unknown');
 
   return (
     <div 
@@ -82,11 +76,11 @@ const TopPositionedPreview: React.FC<TopPositionedPreviewProps> = ({
       )}
 
       {/* Preview container */}
-      <div className="h-full w-full flex items-center justify-center p-4">
+      <div className="h-full w-full flex items-start justify-center p-4 overflow-auto">
         <div
           style={{
             transform: `scale(${scaleManager.scale})`,
-            transformOrigin: 'center center',
+            transformOrigin: 'top center',
             transition: scaleManager.isTransitioning ? 'transform 0.3s ease-in-out' : 'none'
           }}
         >

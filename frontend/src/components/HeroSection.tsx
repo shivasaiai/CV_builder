@@ -27,7 +27,7 @@ const HeroSection = () => {
   return (
     <>
       <section id="home"
-        className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-white overflow-hidden"
+        className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-white overflow-hidden pt-24 pb-16"
       >
         {/* Background Elements */}
         <div className="absolute top-20 left-10 w-72 h-72 bg-blue-100 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob"></div>
@@ -46,47 +46,13 @@ const HeroSection = () => {
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-              <Dialog open={open} onOpenChange={setOpen}>
-                <DialogTrigger asChild>
-                  <Button size="lg" className="px-8 py-4 text-lg">
-                    Build My Resume - Free
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-md">
-                  <DialogHeader>
-                    <DialogTitle>What's your experience level?</DialogTitle>
-                    <DialogDescription>
-                      Help us personalize your resume building experience
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="grid gap-4 py-4">
-                    <Button
-                      variant="outline"
-                      className="h-16 text-left justify-start"
-                      onClick={() => handleSelect("fresher")}
-                    >
-                      <div>
-                        <div className="font-semibold">I'm a fresher</div>
-                        <div className="text-sm text-gray-500">
-                          Starting my career or have limited experience
-                        </div>
-                      </div>
-                    </Button>
-                    <Button
-                      variant="outline"
-                      className="h-16 text-left justify-start"
-                      onClick={() => handleSelect("experienced")}
-                    >
-                      <div>
-                        <div className="font-semibold">I'm experienced</div>
-                        <div className="text-sm text-gray-500">
-                          Have professional work experience
-                        </div>
-                      </div>
-                    </Button>
-                  </div>
-                </DialogContent>
-              </Dialog>
+              <Button
+                size="lg"
+                className="px-8 py-4 text-lg"
+                onClick={() => navigate("/get-started")}
+              >
+                Build My Resume - Free
+              </Button>
 
               <Button 
                 variant="outline" 

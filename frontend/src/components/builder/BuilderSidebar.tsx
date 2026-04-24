@@ -102,17 +102,21 @@ const BuilderSidebar = ({
   }
   
   return (
-    <aside className="h-full bg-slate-900 text-white flex flex-col p-4">
+    <aside className="h-full bg-slate-900 text-white flex flex-col p-4 w-64">
       {/* Logo */}
       <div className="flex items-center mb-6 p-2">
-        <div className="flex items-center">
-          <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center mr-3">
+        <button
+          onClick={() => (window.location.href = "/")}
+          className="flex items-center group"
+          aria-label="Back to home"
+        >
+          <div className="w-9 h-9 bg-blue-500 rounded-lg flex items-center justify-center mr-3 group-hover:bg-blue-400 transition-colors">
             <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
               <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
             </svg>
           </div>
-          {/* App name removed per branding change */}
-        </div>
+          <span className="text-lg font-bold tracking-tight">CraftmyCV</span>
+        </button>
       </div>
 
       {/* Section Navigation with Progress Line */}

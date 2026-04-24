@@ -10,6 +10,7 @@ import BuilderPage from "./pages/Builder";
 import BuilderNew from "./pages/BuilderNew";
 import TestBuilder from "./pages/TestBuilder";
 import TemplateTestPage from "./pages/TemplateTest";
+import GetStarted from "./pages/GetStarted";
 
 const queryClient = new QueryClient();
 
@@ -21,6 +22,7 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
+          <Route path="/get-started" element={<GetStarted />} />
           <Route path="/templates" element={<TemplatesPage />} />
           <Route path="/builder/:sessionId" element={<BuilderPage />} />
           <Route path="/builder-new/:sessionId" element={<BuilderNew />} />
