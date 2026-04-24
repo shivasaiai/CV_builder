@@ -1,4 +1,4 @@
-import { Upload, HelpCircle } from 'lucide-react';
+import { HelpCircle } from 'lucide-react';
 import { SECTIONS, ResumeData } from './types';
 
 interface BuilderSidebarProps {
@@ -114,17 +114,6 @@ const BuilderSidebar = ({
           {/* App name removed per branding change */}
         </div>
       </div>
-
-      {/* Upload Resume Button */}
-      {onUploadClick && (
-        <button
-          onClick={onUploadClick}
-          className="w-full mb-6 px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors flex items-center justify-center space-x-2"
-        >
-          <Upload className="w-4 h-4" />
-          <span>Upload Resume</span>
-        </button>
-      )}
 
       {/* Section Navigation with Progress Line */}
       <nav className="py-2">
